@@ -1,4 +1,4 @@
-package aed3;
+package aeds3;
 
 public class ParIDEndereco {
     
