@@ -1,0 +1,6 @@
+# Ignorar arquivos compilados
+*.class
+*.jar
+
+# Ignorar diretório de dados
+dados/
