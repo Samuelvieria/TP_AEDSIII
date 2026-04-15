@@ -1,11 +1,12 @@
 package arquivos;
 
-import aed3.Arquivo;
-import aed3.HashExtensivel;
 import entidades.Usuario;
 import indices.ParEmailId;
 
 import java.io.IOException;
+
+import aed3.Arquivo;
+import aed3.HashExtensivel;
 
 public class ArquivoUsuario extends Arquivo<Usuario> {
     
