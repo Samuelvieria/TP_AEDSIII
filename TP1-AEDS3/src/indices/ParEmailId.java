@@ -14,6 +14,9 @@ public class ParEmailId implements InterfaceHashExtensivel {
     private int id;             // valor (ID do usuário)
     private final short TAMANHO = 64;  // 60 bytes para email + 4 para int
     
+     // Constante para ativar/desativar logs de debug
+    private static final boolean DEBUG = false;
+
     public ParEmailId() {
         this.email = "";
         this.id = -1;
@@ -48,19 +51,18 @@ public class ParEmailId implements InterfaceHashExtensivel {
         return TAMANHO;
     }
     
-    @Override
+     @Override
     public byte[] toByteArray() throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);
         
-        // Converte email para bytes e fixa tamanho 60
         byte[] emailBytes = email.getBytes(StandardCharsets.UTF_8);
         byte[] buffer = new byte[60];
         System.arraycopy(emailBytes, 0, buffer, 0, Math.min(emailBytes.length, 60));
         dos.write(buffer);
         dos.writeInt(id);
         
-        //System.out.println("ParEmailId serializado: " + this.toString());
+        if (DEBUG) System.out.println("ParEmailId serializado: " + this.toString());
         return baos.toByteArray();
     }
     
@@ -71,13 +73,12 @@ public class ParEmailId implements InterfaceHashExtensivel {
         
         byte[] buffer = new byte[60];
         dis.read(buffer);
-        // Remove zeros à direita para obter string real
         int len = 0;
         while (len < 60 && buffer[len] != 0) len++;
         email = new String(buffer, 0, len, StandardCharsets.UTF_8);
         
         id = dis.readInt();
-        //System.out.println("ParEmailId desserializado: " + this.toString());
+        if (DEBUG) System.out.println("ParEmailId desserializado: " + this.toString());
     }
     
     @Override
