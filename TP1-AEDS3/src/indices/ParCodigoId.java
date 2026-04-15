@@ -6,37 +6,36 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
+// Par (código compartilhável, ID do curso) para índice hash extensível
 public class ParCodigoId implements InterfaceHashExtensivel {
 
-    private int id;          // chave (ID do curso)
-    private long endereco;   // valor (endereço no arquivo)
-    private final short TAMANHO = 12;  // 4 bytes (int) + 8 bytes (long)
+    private String codigo;       // chave: código NanoID de 10 caracteres
+    private int idCurso;         // valor: ID do curso
+    private final short TAMANHO = 14;  // 10 bytes para código + 4 bytes para int
 
-    // Constante para ativar/desativar logs de debug
     private static final boolean DEBUG = false;
 
     public ParCodigoId() {
-        this(-1, -1);
+        this.codigo = "";
+        this.idCurso = -1;
     }
 
-    public ParCodigoId(int id, long endereco) {
-        this.id = id;
-        this.endereco = endereco;
+    public ParCodigoId(String codigo, int idCurso) throws Exception {
+        if (codigo == null || codigo.length() != 10)
+            throw new Exception("Código deve ter exatamente 10 caracteres");
+        this.codigo = codigo;
+        this.idCurso = idCurso;
     }
 
-    public int getId() {
-        return id;
-    }
-
-    public long getEndereco() {
-        return endereco;
-    }
+    public String getCodigo() { return codigo; }
+    public int getIdCurso() { return idCurso; }
 
     @Override
     public int hashCode() {
-        // A chave é o ID (já é positivo, mas garantimos valor absoluto)
-        return Math.abs(id);
+        // A chave é o código (hash calculado a partir da string)
+        return Math.abs(codigo.hashCode());
     }
 
     @Override
@@ -49,10 +48,14 @@ public class ParCodigoId implements InterfaceHashExtensivel {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);
 
-        dos.writeInt(id);
-        dos.writeLong(endereco);
+        // Escreve o código como array fixo de 10 bytes
+        byte[] codBytes = codigo.getBytes(StandardCharsets.UTF_8);
+        byte[] buffer = new byte[10];
+        System.arraycopy(codBytes, 0, buffer, 0, Math.min(codBytes.length, 10));
+        dos.write(buffer);
+        dos.writeInt(idCurso);
 
-        if (DEBUG) System.out.println("ParCodigoId serializado: " + this.toString());
+        if (DEBUG) System.out.println("ParCodigoId serializado: " + toString());
         return baos.toByteArray();
     }
 
@@ -61,14 +64,23 @@ public class ParCodigoId implements InterfaceHashExtensivel {
         ByteArrayInputStream bais = new ByteArrayInputStream(ba);
         DataInputStream dis = new DataInputStream(bais);
 
-        id = dis.readInt();
-        endereco = dis.readLong();
+        byte[] buffer = new byte[10];
+        dis.read(buffer);
+        int len = 0;
+        while (len < 10 && buffer[len] != 0) len++;
+        codigo = new String(buffer, 0, len, StandardCharsets.UTF_8);
+        idCurso = dis.readInt();
 
-        if (DEBUG) System.out.println("ParCodigoId desserializado: " + this.toString());
+        if (DEBUG) System.out.println("ParCodigoId desserializado: " + toString());
     }
 
     @Override
     public String toString() {
-        return "(" + id + ";" + endereco + ")";
+        return "(" + codigo + ";" + idCurso + ")";
+    }
+
+    public int getEndereco() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getEndereco'");
     }
 }

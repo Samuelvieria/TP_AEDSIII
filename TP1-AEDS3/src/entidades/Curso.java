@@ -13,13 +13,13 @@ public class Curso implements InterfaceEntidade {
     private String nome;
     private String descricao;
     private LocalDate dataInicio;
-    private String codigo;       // 10 caracteres
-    private byte estado;         // 0=ativo, 1=encerrado, 2=concluído, 3=cancelado
-    private int idUsuario;       // dono do curso
+    private String codigo; // 10 caracteres
+    private byte estado; // 0=ativo, 1=encerrado, 2=concluído, 3=cancelado
+    private int idUsuario; // dono do curso
 
     // Construtor vazio
     public Curso() {
-        this(-1, "", "", LocalDate.now(), "", (byte)0, -1);
+        this(-1, "", "", LocalDate.now(), "", (byte) 0, -1);
     }
 
     // Construtor sem ID (para criação antes de gerar ID)
@@ -28,7 +28,8 @@ public class Curso implements InterfaceEntidade {
     }
 
     // Construtor completo
-    public Curso(int id, String nome, String descricao, LocalDate dataInicio, String codigo, byte estado, int idUsuario) {
+    public Curso(int id, String nome, String descricao, LocalDate dataInicio, String codigo, byte estado,
+            int idUsuario) {
         this.id = id;
         this.nome = nome;
         this.descricao = descricao;
@@ -131,11 +132,12 @@ public class Curso implements InterfaceEntidade {
     @Override
     public String toString() {
         return "ID........: " + id +
-               "\nNome......: " + nome +
-               "\nDescrição.: " + descricao +
-               "\nData início: " + dataInicio +
-               "\nCódigo....: " + codigo +
-               "\nEstado....: " + estado +
-               "\nID Usuário: " + idUsuario;
+                "\nNome......: " + nome +
+                "\nDescrição.: " + descricao +
+                "\nData início: " + dataInicio +
+                "\nCódigo....: " + codigo +
+                "\nEstado....: " + estado +
+                "\nID Usuário: " + idUsuario;
     }
+
 }
