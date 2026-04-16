@@ -2,7 +2,7 @@
 
 **Disciplina:** AEDS III  
 **Instituição:** PUC Minas  
-**Professor:** Marcos Kutova
+**Professor:** Marcos Kutova  
 **Período:** 1º semestre de 2026
 
 ---
