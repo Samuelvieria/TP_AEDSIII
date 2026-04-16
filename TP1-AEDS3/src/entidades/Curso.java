@@ -94,6 +94,10 @@ public class Curso implements InterfaceEntidade {
         return idUsuario;
     }
 
+    public int getUsuarioId() {
+        return idUsuario;
+    }
+
     public void setIdUsuario(int idUsuario) {
         this.idUsuario = idUsuario;
     }

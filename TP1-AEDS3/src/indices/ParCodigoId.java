@@ -11,9 +11,9 @@ import java.nio.charset.StandardCharsets;
 // Par (código compartilhável, ID do curso) para índice hash extensível
 public class ParCodigoId implements InterfaceHashExtensivel {
 
-    private String codigo;       // chave: código NanoID de 10 caracteres
-    private int idCurso;         // valor: ID do curso
-    private final short TAMANHO = 14;  // 10 bytes para código + 4 bytes para int
+    private String codigo; // chave: código NanoID de 10 caracteres
+    private int idCurso; // valor: ID do curso
+    private final short TAMANHO = 14; // 10 bytes para código + 4 bytes para int
 
     private static final boolean DEBUG = false;
 
@@ -29,8 +29,13 @@ public class ParCodigoId implements InterfaceHashExtensivel {
         this.idCurso = idCurso;
     }
 
-    public String getCodigo() { return codigo; }
-    public int getIdCurso() { return idCurso; }
+    public String getCodigo() {
+        return codigo;
+    }
+
+    public int getIdCurso() {
+        return idCurso;
+    }
 
     @Override
     public int hashCode() {
@@ -55,7 +60,8 @@ public class ParCodigoId implements InterfaceHashExtensivel {
         dos.write(buffer);
         dos.writeInt(idCurso);
 
-        if (DEBUG) System.out.println("ParCodigoId serializado: " + toString());
+        if (DEBUG)
+            System.out.println("ParCodigoId serializado: " + toString());
         return baos.toByteArray();
     }
 
@@ -67,11 +73,13 @@ public class ParCodigoId implements InterfaceHashExtensivel {
         byte[] buffer = new byte[10];
         dis.read(buffer);
         int len = 0;
-        while (len < 10 && buffer[len] != 0) len++;
+        while (len < 10 && buffer[len] != 0)
+            len++;
         codigo = new String(buffer, 0, len, StandardCharsets.UTF_8);
         idCurso = dis.readInt();
 
-        if (DEBUG) System.out.println("ParCodigoId desserializado: " + toString());
+        if (DEBUG)
+            System.out.println("ParCodigoId desserializado: " + toString());
     }
 
     @Override
@@ -79,8 +87,4 @@ public class ParCodigoId implements InterfaceHashExtensivel {
         return "(" + codigo + ";" + idCurso + ")";
     }
 
-    public int getEndereco() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getEndereco'");
-    }
 }
