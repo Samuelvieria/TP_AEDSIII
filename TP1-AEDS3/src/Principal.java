@@ -15,11 +15,13 @@ public class Principal {
         Scanner console = new Scanner(System.in);
 
         try {
-            // Inicializa os controles (cada um instancia seus respectivos arquivos e visões)
+            // Inicializa os controles (cada um instancia seus respectivos arquivos e
+            // visões)
             ControleUsuario ctrlUsuario = new ControleUsuario(console);
             ControleCurso ctrlCurso = new ControleCurso(console);
 
-            if (DEBUG) System.out.println("[DEBUG] Sistema iniciado. Iniciando autenticação...");
+            if (DEBUG)
+                System.out.println("[DEBUG] Sistema iniciado. Iniciando autenticação...");
 
             // Tela de autenticação (login/cadastro/recuperação)
             if (!ctrlUsuario.autenticar()) {
@@ -36,21 +38,29 @@ public class Principal {
                 switch (opcao) {
                     case "A":
                         // Meus dados (perfil do usuário)
-                        if (DEBUG) System.out.println("[DEBUG] Acessando 'Meus dados'.");
+                        if (DEBUG)
+                            System.out.println("[DEBUG] Acessando 'Meus dados'.");
                         ctrlUsuario.menuMeusDados();
                         break;
                     case "B":
                         // Meus cursos (gerenciamento de cursos)
-                        if (DEBUG) System.out.println("[DEBUG] Acessando 'Meus cursos'.");
+                        if (DEBUG)
+                            System.out.println("[DEBUG] Acessando 'Meus cursos'.");
                         ctrlCurso.gerenciarCursos();
                         break;
                     case "C":
                         // Minhas inscrições (futuro TP2)
                         System.out.println("\nFuncionalidade 'Minhas inscrições' disponível apenas no TP2.");
                         break;
+                    case "P":
+                        if (DEBUG)
+                            System.out.println("[DEBUG] Executando população do BD.");
+                        testes.PopularBD.executar();
+                        break;
                     case "S":
                         // Sair
-                        if (DEBUG) System.out.println("[DEBUG] Usuário escolheu sair.");
+                        if (DEBUG)
+                            System.out.println("[DEBUG] Usuário escolheu sair.");
                         System.out.println("Saindo do sistema...");
                         break;
                     default:
@@ -61,7 +71,8 @@ public class Principal {
             // Fecha os arquivos antes de encerrar
             ctrlUsuario.close();
             ctrlCurso.close();
-            if (DEBUG) System.out.println("[DEBUG] Sistema encerrado com sucesso.");
+            if (DEBUG)
+                System.out.println("[DEBUG] Sistema encerrado com sucesso.");
 
         } catch (Exception e) {
             System.err.println("Erro fatal na execução do sistema:");
@@ -77,6 +88,7 @@ public class Principal {
         System.out.println("(A) Meus dados");
         System.out.println("(B) Meus cursos");
         System.out.println("(C) Minhas inscrições");
+        System.out.println("(P) Popular BD (teste)");
         System.out.println("(S) Sair");
         System.out.print("\nOpção: ");
     }
