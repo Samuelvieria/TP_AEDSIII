@@ -96,6 +96,37 @@ A aplicação permite que usuários se cadastrem, façam login e gerenciem seus 
 ---
 
 ## 🖼️ Telas do Sistema 
+<img width="477" height="152" alt="Menu" src="https://github.com/user-attachments/assets/e2e18794-3105-4ac7-8e5f-44e668a2ecd2" />
+
+<img width="644" height="125" alt="Novo cadastro" src="https://github.com/user-attachments/assets/c66faf3d-131b-4b11-b5b7-54bb313ea366" />
+
+<img width="556" height="174" alt="Login" src="https://github.com/user-attachments/assets/0f39b40c-a21c-4fc8-9ea3-d3d375fa2726" />
+
+<img width="612" height="230" alt="Dados do usuario" src="https://github.com/user-attachments/assets/d71311f7-0191-4e86-90ce-485caff2c966" />
+
+<img width="600" height="219" alt="alterar dados usuario" src="https://github.com/user-attachments/assets/62bb6b93-105e-4f90-a71b-a9c58edd2f04" />
+
+<img width="525" height="198" alt="alterar senha usuario" src="https://github.com/user-attachments/assets/fa22190a-fd4e-405a-a71c-547d06356448" />
+
+<img width="682" height="127" alt="Menu curso" src="https://github.com/user-attachments/assets/29c91294-6a38-42d0-832f-795dedcde5be" />
+
+<img width="576" height="82" alt="Novo curso" src="https://github.com/user-attachments/assets/845d76d0-a88c-493e-95fd-d370f7a81b2c" />
+
+<img width="547" height="93" alt="alterar curso" src="https://github.com/user-attachments/assets/cbcf7592-d980-4225-9178-b802ded2f6c8" />
+
+<img width="599" height="211" alt="dados curso" src="https://github.com/user-attachments/assets/5be4261d-35f3-4b15-9c93-25729c26e180" />
+
+
+
+
+
+
+
+
+
+
+
+
 
 ---
 
