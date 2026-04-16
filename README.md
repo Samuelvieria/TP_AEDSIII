@@ -102,14 +102,12 @@ src/
 
 ## ✅ Checklist de Avaliação
 
-## Pergunta 1: Há um CRUD de usuários (que estende a classe ArquivoIndexado, acrescentando Tabelas Hash Extensíveis e Árvores B+ como índices diretos e indiretos conforme 
-## necessidade) que funciona corretamente?
+## Pergunta 1: Há um CRUD de usuários (que estende a classe ArquivoIndexado, acrescentando Tabelas Hash Extensíveis e Árvores B+ como índices diretos e indiretos conforme necessidade) que funciona corretamente?
 Sim. A classe ArquivoUsuario estende Arquivo<Usuario> (que internamente utiliza HashExtensivel<ParIDEndereco> para índice direto ID → endereço) e acrescenta 
 HashExtensivel<ParEmailId> para busca por email. Os métodos create, read, update, delete, login e recuperarSenha foram implementados e testados, comprovando o funcionamento 
 completo do CRUD com os índices exigidos.
 
-## Pergunta 2: Há um CRUD de cursos (que estende a classe ArquivoIndexado, acrescentando Tabelas Hash Extensíveis e Árvores B+ como índices diretos e indiretos conforme 
-## necessidade) que funciona corretamente?
+## Pergunta 2: Há um CRUD de cursos (que estende a classe ArquivoIndexado, acrescentando Tabelas Hash Extensíveis e Árvores B+ como índices diretos e indiretos conforme necessidade) que funciona corretamente?
 Sim. A classe ArquivoCurso estende Arquivo<Curso> e adiciona três índices: HashExtensivel<ParCodigoId> (busca por código compartilhável), ArvoreBMais<ParNomeCursoId> 
 (busca ordenada por nome) e ArvoreBMais<ParUsuarioCursoId> (relacionamento 1:N). Os métodos create, read, update, delete, listarPorUsuario e readNome operam corretamente, 
 atendendo a todos os requisitos de CRUD e indexação.
@@ -122,8 +120,7 @@ ParUsuarioCursoId armazena esse vínculo na árvore B+, garantindo a integridade
 Sim. O índice indiceUsuario em ArquivoCurso é uma ArvoreBMais<ParUsuarioCursoId>, onde a chave é o idUsuario. O método listarPorUsuario(int idUsuario) percorre essa árvore
 e retorna todos os cursos associados ao usuário, demonstrando claramente o relacionamento 1:N.
 
-## Pergunta 5: Há um CRUD de usuários (que estende a classe ArquivoIndexado, acrescentando Tabelas Hash Extensíveis e Árvores B+ como índices diretos e indiretos conforme 
-## necessidade)?
+## Pergunta 5: Há um CRUD de usuários (que estende a classe ArquivoIndexado, acrescentando Tabelas Hash Extensíveis e Árvores B+ como índices diretos e indiretos conforme necessidade)?
 Sim. A classe ArquivoUsuario estende a classe genérica Arquivo<Usuario> (que internamente utiliza uma Tabela Hash Extensível para o índice direto ParIDEndereco). 
 Além do índice direto obrigatório, ArquivoUsuario acrescenta um índice adicional baseado em Hash Extensível – ParEmailId – para busca rápida e validação de unicidade de 
 emails. Os métodos create, read, update, delete, bem como as operações específicas login e recuperarSenha, foram implementados e testados, garantindo o pleno funcionamento
