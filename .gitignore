@@ -1,6 +1,33 @@
-# Ignorar arquivos compilados
+# Compilados Java
+bin/
 *.class
 *.jar
+*.war
+*.ear
 
-# Ignorar diretório de dados
+# Dados gerados em execução (arquivos de banco de dados e índices)
 dados/
+
+# Configurações de IDE
+.vscode/
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+target/
+
+# Arquivos de sistema operacional
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs e arquivos temporários
+*.log
+*.tmp
+*.swp
+*~
+
+# Arquivos de backup
+*.bak
+*.backup
