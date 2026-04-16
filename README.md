@@ -56,43 +56,42 @@ A aplicação permite que usuários se cadastrem, façam login e gerenciem seus 
 
 ## 📁 Estrutura de Pacotes e Classes Criadas
 
-src/
-├── aed3/ (classes genéricas fornecidas)
-│ ├── Arquivo.java
-│ ├── HashExtensivel.java
-│ ├── ArvoreBMais.java
-│ ├── InterfaceEntidade.java
-│ ├── InterfaceHashExtensivel.java
-│ ├── InterfaceArvoreBMais.java
-│ └── ParIDEndereco.java
-│
-├── entidades/
-│ ├── Usuario.java (entidade usuário)
-│ └── Curso.java (entidade curso)
-│
-├── indices/
-│ ├── ParEmailId.java (par email → idUsuario)
-│ ├── ParCodigoId.java (par código → idCurso)
-│ ├── ParNomeCursoId.java (par nome → idCurso)
-│ └── ParUsuarioCursoId.java (par idUsuario → idCurso)
-│
-├── arquivos/
-│ ├── ArquivoUsuario.java (CRUD de usuários + índices)
-│ └── ArquivoCurso.java (CRUD de cursos + índices)
-│
-├── visao/
-│ ├── VisaoUsuario.java (interface textual para usuário)
-│ └── VisaoCurso.java (interface textual para cursos)
-│
-├── controle/
-│ ├── Sessao.java (gerência do usuário logado)
-│ ├── ControleUsuario.java (lógica de autenticação e perfil)
-│ └── ControleCurso.java (lógica de gestão de cursos)
-│
-├── testes/
-│ └── PopularBD.java (popula base com dados de exemplo)
-│
-└── Principal.java (classe principal com menu)
+- **`aed3/`** – Classes genéricas fornecidas
+  - `Arquivo.java`
+  - `HashExtensivel.java`
+  - `ArvoreBMais.java`
+  - `InterfaceEntidade.java`
+  - `InterfaceHashExtensivel.java`
+  - `InterfaceArvoreBMais.java`
+  - `ParIDEndereco.java`
+
+- **`entidades/`**
+  - `Usuario.java` – entidade usuário
+  - `Curso.java` – entidade curso
+
+- **`indices/`**
+  - `ParEmailId.java` – par (email → idUsuario)
+  - `ParCodigoId.java` – par (código → idCurso)
+  - `ParNomeCursoId.java` – par (nome → idCurso)
+  - `ParUsuarioCursoId.java` – par (idUsuario → idCurso)
+
+- **`arquivos/`**
+  - `ArquivoUsuario.java` – CRUD de usuários + índices
+  - `ArquivoCurso.java` – CRUD de cursos + índices
+
+- **`visao/`**
+  - `VisaoUsuario.java` – interface textual para usuário
+  - `VisaoCurso.java` – interface textual para cursos
+
+- **`controle/`**
+  - `Sessao.java` – gerência do usuário logado
+  - `ControleUsuario.java` – lógica de autenticação e perfil
+  - `ControleCurso.java` – lógica de gestão de cursos
+
+- **`testes/`**
+  - `PopularBD.java` – popula base com dados de exemplo
+
+- `Principal.java` – classe principal com menu
 
 ---
 
@@ -138,6 +137,8 @@ foram testados e executam conforme as especificações, sem erros em tempo de ex
 Sim. O código foi desenvolvido pelo próprio grupo a partir das classes base fornecidas pelo professor (Arquivo, HashExtensivel, ArvoreBMais), adaptando e estendendo para as 
 entidades Usuario e Curso com índices personalizados (ParEmailId, ParCodigoId, ParNomeCursoId, ParUsuarioCursoId). As classes de visão e controle foram implementadas 
 seguindo o padrão MVC solicitado, sem reaproveitamento de código de outros grupos.
+
+---
 
 ## ⁉️ Observações Adicionais
 A classe testes.PopularBD foi desenvolvida exclusivamente para agilizar a validação do sistema. Seu propósito é povoar o banco de dados com usuários e cursos de exemplo, 
