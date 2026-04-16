@@ -124,9 +124,19 @@ A aplicação permite que usuários se cadastrem, façam login e gerenciem seus 
 
 
 
+---
 
+## ⚙️ Operações Especiais Implementadas
 
+- **Geração de código compartilhável (NanoID):** Um código alfanumérico de 10 caracteres é gerado aleatoriamente no momento da criação do curso, garantindo unicidade e servindo como identificador público do curso.
 
+- **Recuperação de senha via pergunta secreta:** O usuário pode redefinir sua senha respondendo corretamente à pergunta secreta cadastrada, sem necessidade de intervenção externa.
+
+- **Transições de estado do curso:** O sistema controla as mudanças de estado (0=Ativo → 1=Encerrado → 2=Concluído / 3=Cancelado) com validações que impedem transições inválidas.
+
+- **Isolamento de dados por usuário:** Cada usuário visualiza exclusivamente seus próprios cursos, graças ao índice `ArvoreBMais<ParUsuarioCursoId>` e ao método `listarPorUsuario`.
+
+- **Listagem ordenada por nome:** A árvore B+ de nome de curso permite a recuperação ordenada alfabeticamente, ignorando acentos e diferenças de caixa, conforme exigido para o menu de seleção.
 
 ---
 
