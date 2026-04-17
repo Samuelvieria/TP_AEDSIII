@@ -16,6 +16,12 @@
 
 ---
 
+## Link do vídeo 
+
+https://youtu.be/1f93MSxZod4
+
+---
+
 ## 📖 Descrição do Sistema
 
 O EntrePares 1.0 é um sistema de gestão de cursos livres desenvolvido como primeiro trabalho prático da disciplina de Algoritmos e Estruturas de Dados III. 
