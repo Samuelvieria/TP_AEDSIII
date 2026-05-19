@@ -1,4 +1,5 @@
 import controle.ControleCurso;
+import controle.ControleInscricao;
 import controle.ControleUsuario;
 
 import java.util.Scanner;
@@ -19,6 +20,7 @@ public class Principal {
             // visões)
             ControleUsuario ctrlUsuario = new ControleUsuario(console);
             ControleCurso ctrlCurso = new ControleCurso(console);
+            ControleInscricao ctrlInscricao = new ControleInscricao(console);
 
             if (DEBUG)
                 System.out.println("[DEBUG] Sistema iniciado. Iniciando autenticação...");
@@ -49,8 +51,9 @@ public class Principal {
                         ctrlCurso.gerenciarCursos();
                         break;
                     case "C":
-                        // Minhas inscrições (futuro TP2)
-                        System.out.println("\nFuncionalidade 'Minhas inscrições' disponível apenas no TP2.");
+                        if (DEBUG)
+                            System.out.println("[DEBUG] Acessando 'Minhas inscrições'.");
+                        ctrlInscricao.menuMinhasInscricoes();
                         break;
                     case "P":
                         if (DEBUG)
@@ -71,6 +74,7 @@ public class Principal {
             // Fecha os arquivos antes de encerrar
             ctrlUsuario.close();
             ctrlCurso.close();
+            ctrlInscricao.close();
             if (DEBUG)
                 System.out.println("[DEBUG] Sistema encerrado com sucesso.");
 
