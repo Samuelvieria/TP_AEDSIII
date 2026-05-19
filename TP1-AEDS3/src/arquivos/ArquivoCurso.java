@@ -144,6 +144,22 @@ public class ArquivoCurso extends Arquivo<Curso> {
         return lista;
     }
 
+    // Lista todos os cursos ativos consultando o arquivo de dados.
+    public ArrayList<Curso> listarTodos() throws Exception {
+        ArrayList<Curso> lista = new ArrayList<>();
+        java.io.RandomAccessFile rf = new java.io.RandomAccessFile("./dados/curso/dados.db", "r");
+        rf.seek(0);
+        int ultimoId = rf.readInt();
+        rf.close();
+        for (int id = 1; id <= ultimoId; id++) {
+            Curso c = super.read(id);
+            if (c != null) {
+                lista.add(c);
+            }
+        }
+        return lista;
+    }
+
     // ---------------- UPDATE ----------------
     // Atualiza um curso existente. Se nome ou dono mudar, atualiza os índices
     // correspondentes.
