@@ -20,9 +20,18 @@ public class VisaoInscricao {
         System.out.println("\n" + breadcrumb + "\n");
     }
 
-    public void menuMinhasInscricoes() {
+    public void menuMinhasInscricoes(ArrayList<Curso> cursosInscritos, ArrayList<String> sufixosEstado) {
         exibirCabecalho("> Início > Minhas inscrições");
-        System.out.println("INSCRIÇÕES\n");
+        System.out.println("INSCRIÇÕES");
+        if (cursosInscritos != null && !cursosInscritos.isEmpty()) {
+            for (int i = 0; i < cursosInscritos.size(); i++) {
+                Curso c = cursosInscritos.get(i);
+                String sufixo = sufixosEstado.get(i);
+                System.out.printf("(%d) %s - %s%s\n", i + 1, c.getNome(),
+                        c.getDataInicio().format(FMT_DATA), sufixo);
+            }
+        }
+        System.out.println();
         System.out.println("(A) Buscar curso por código");
         System.out.println("(B) Buscar curso por palavras-chave");
         System.out.println("(C) Listar todos os cursos");

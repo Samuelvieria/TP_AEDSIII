@@ -1,8 +1,10 @@
 package controle;
 
 import arquivos.ArquivoCurso;
+import arquivos.ArquivoInscricao;
 import arquivos.ArquivoUsuario;
 import entidades.Curso;
+import entidades.Inscricao;
 import entidades.Usuario;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -16,25 +18,50 @@ public class ControleInscricao {
 
     private ArquivoCurso arqCurso;
     private ArquivoUsuario arqUsuario;
+    private ArquivoInscricao arqInscricao;
     private VisaoInscricao visao;
 
     public ControleInscricao(Scanner console) throws Exception {
         this.visao = new VisaoInscricao(console);
         this.arqCurso = new ArquivoCurso();
         this.arqUsuario = new ArquivoUsuario();
+        this.arqInscricao = new ArquivoInscricao();
     }
 
     public void menuMinhasInscricoes() {
         String opcao;
         do {
-            visao.menuMinhasInscricoes();
+            ArrayList<Curso> inscritos;
+            ArrayList<String> sufixos;
+            try {
+                inscritos = listarCursosInscritos();
+                sufixos = montarSufixosEstado(inscritos);
+            } catch (Exception e) {
+                visao.mostrarMensagem("Erro ao carregar inscrições: " + e.getMessage());
+                inscritos = new ArrayList<>();
+                sufixos = new ArrayList<>();
+            }
+
+            visao.menuMinhasInscricoes(inscritos, sufixos);
             opcao = visao.lerOpcaoMenu();
-            switch (opcao) {
-                case "A": buscarPorCodigo(); break;
-                case "B": visao.mostrarMensagem("Busca por palavras-chave disponível apenas no TP3."); break;
-                case "C": listarTodosPaginado(); break;
-                case "R": break;
-                default: visao.mostrarMensagem("Opção inválida.");
+
+            if (opcao.matches("\\d+")) {
+                int indice = Integer.parseInt(opcao) - 1;
+                if (indice >= 0 && indice < inscritos.size()) {
+                    Curso curso = inscritos.get(indice);
+                    String breadcrumb = "> Início > Minhas inscrições > " + curso.getNome();
+                    gerenciarDetalhe(curso, breadcrumb);
+                } else {
+                    visao.mostrarMensagem("Inscrição inválida.");
+                }
+            } else {
+                switch (opcao) {
+                    case "A": buscarPorCodigo(); break;
+                    case "B": visao.mostrarMensagem("Busca por palavras-chave disponível apenas no TP3."); break;
+                    case "C": listarTodosPaginado(); break;
+                    case "R": break;
+                    default: visao.mostrarMensagem("Opção inválida.");
+                }
             }
         } while (!opcao.equals("R"));
     }
@@ -52,7 +79,7 @@ public class ControleInscricao {
                 return;
             }
             String breadcrumb = "> Início > Minhas inscrições > " + curso.getNome();
-            gerenciarDetalhe(curso, breadcrumb, ContextoDetalhe.INSCREVER);
+            gerenciarDetalhe(curso, breadcrumb);
         } catch (Exception e) {
             visao.mostrarMensagem("Erro na busca: " + e.getMessage());
         }
@@ -97,7 +124,7 @@ public class ControleInscricao {
                     visao.mostrarMensagem("Opção inválida para esta página.");
                 } else {
                     String breadcrumbDetalhe = breadcrumbLista + " > " + selecionado.getNome();
-                    gerenciarDetalhe(selecionado, breadcrumbDetalhe, ContextoDetalhe.INSCREVER);
+                    gerenciarDetalhe(selecionado, breadcrumbDetalhe);
                 }
             } else if (!opcao.equals("R")) {
                 visao.mostrarMensagem("Opção inválida.");
@@ -116,23 +143,117 @@ public class ControleInscricao {
         return null;
     }
 
-    private void gerenciarDetalhe(Curso curso, String breadcrumb, ContextoDetalhe contexto) {
+    private void gerenciarDetalhe(Curso curso, String breadcrumb) {
         String opcao;
         do {
+            ContextoDetalhe contexto;
+            try {
+                contexto = contextoParaCurso(curso);
+            } catch (Exception e) {
+                visao.mostrarMensagem("Erro: " + e.getMessage());
+                return;
+            }
+
             visao.exibirDetalheCurso(breadcrumb, curso, resolverNomeAutor(curso), contexto);
             opcao = visao.lerOpcaoDetalhe();
+
             if (opcao.equals("A")) {
                 if (contexto == ContextoDetalhe.INSCREVER) {
-                    visao.mostrarMensagem(
-                            "A efetivação da inscrição será implementada na próxima etapa do TP2.");
+                    efetivarInscricao(curso);
                 } else {
-                    visao.mostrarMensagem(
-                            "O cancelamento da inscrição será implementado na próxima etapa do TP2.");
+                    cancelarInscricao(curso);
                 }
             } else if (!opcao.equals("R")) {
                 visao.mostrarMensagem("Opção inválida.");
             }
         } while (!opcao.equals("R"));
+    }
+
+    private void efetivarInscricao(Curso curso) {
+        int idUsuario = Sessao.getIdUsuarioLogado();
+        String erro = validarInscricao(curso, idUsuario);
+        if (erro != null) {
+            visao.mostrarMensagem(erro);
+            return;
+        }
+        try {
+            arqInscricao.create(new Inscricao(idUsuario, curso.getID()));
+            visao.mostrarMensagem("Inscrição realizada com sucesso!");
+        } catch (Exception e) {
+            visao.mostrarMensagem(e.getMessage());
+        }
+    }
+
+    private void cancelarInscricao(Curso curso) {
+        try {
+            Inscricao inscricao = buscarInscricao(Sessao.getIdUsuarioLogado(), curso.getID());
+            if (inscricao == null) {
+                visao.mostrarMensagem("Inscrição não encontrada.");
+                return;
+            }
+            if (arqInscricao.delete(inscricao.getID())) {
+                visao.mostrarMensagem("Inscrição cancelada com sucesso.");
+            } else {
+                visao.mostrarMensagem("Falha ao cancelar a inscrição.");
+            }
+        } catch (Exception e) {
+            visao.mostrarMensagem("Erro ao cancelar: " + e.getMessage());
+        }
+    }
+
+    private ArrayList<Curso> listarCursosInscritos() throws Exception {
+        ArrayList<Curso> cursos = new ArrayList<>();
+        for (Inscricao ins : arqInscricao.listarPorUsuario(Sessao.getIdUsuarioLogado())) {
+            Curso c = arqCurso.read(ins.getIdCurso());
+            if (c != null) {
+                cursos.add(c);
+            }
+        }
+        cursos.sort(Comparator.comparing(Curso::getDataInicio));
+        return cursos;
+    }
+
+    private ArrayList<String> montarSufixosEstado(ArrayList<Curso> cursos) {
+        ArrayList<String> sufixos = new ArrayList<>();
+        for (Curso c : cursos) {
+            sufixos.add(sufixoEstadoCurso(c.getEstado()));
+        }
+        return sufixos;
+    }
+
+    private String sufixoEstadoCurso(byte estado) {
+        switch (estado) {
+            case 1: return " (INSCRIÇÕES ENCERRADAS)";
+            case 2: return " (CURSO REALIZADO)";
+            case 3: return " (CURSO CANCELADO)";
+            default: return "";
+        }
+    }
+
+    private ContextoDetalhe contextoParaCurso(Curso curso) throws Exception {
+        return buscarInscricao(Sessao.getIdUsuarioLogado(), curso.getID()) != null
+                ? ContextoDetalhe.CANCELAR : ContextoDetalhe.INSCREVER;
+    }
+
+    private Inscricao buscarInscricao(int idUsuario, int idCurso) throws Exception {
+        for (Inscricao ins : arqInscricao.listarPorUsuario(idUsuario)) {
+            if (ins.getIdCurso() == idCurso) {
+                return ins;
+            }
+        }
+        return null;
+    }
+
+    private String validarInscricao(Curso curso, int idUsuario) {
+        if (curso.getIdUsuario() == idUsuario) {
+            return "Você não pode se inscrever no seu próprio curso.";
+        }
+        switch (curso.getEstado()) {
+            case 1: return "As inscrições estão encerradas para este curso.";
+            case 2: return "Este curso já foi realizado.";
+            case 3: return "Este curso foi cancelado.";
+            default: return null;
+        }
     }
 
     private String resolverNomeAutor(Curso curso) {
@@ -148,5 +269,6 @@ public class ControleInscricao {
     public void close() throws Exception {
         arqCurso.close();
         arqUsuario.close();
+        arqInscricao.close();
     }
 }
