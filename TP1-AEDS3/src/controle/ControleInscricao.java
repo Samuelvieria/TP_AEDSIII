@@ -216,18 +216,17 @@ public class ControleInscricao {
     private ArrayList<String> montarSufixosEstado(ArrayList<Curso> cursos) {
         ArrayList<String> sufixos = new ArrayList<>();
         for (Curso c : cursos) {
-            sufixos.add(sufixoEstadoCurso(c.getEstado()));
+            sufixos.add(sufixoEstadoCurso(c));
         }
         return sufixos;
     }
 
-    private String sufixoEstadoCurso(byte estado) {
-        switch (estado) {
-            case 1: return " (INSCRIÇÕES ENCERRADAS)";
-            case 2: return " (CURSO REALIZADO)";
-            case 3: return " (CURSO CANCELADO)";
-            default: return "";
-        }
+    // Adaptado para usar os métodos lógicos corretos do modelo unificado
+    private String sufixoEstadoCurso(Curso c) {
+        if (c.inscricoesEncerradas()) return " (INSCRIÇÕES ENCERRADAS)";
+        if (c.estaConcluido()) return " (CURSO REALIZADO)";
+        if (c.estaCancelado()) return " (CURSO CANCELADO)";
+        return "";
     }
 
     private ContextoDetalhe contextoParaCurso(Curso curso) throws Exception {
@@ -235,8 +234,10 @@ public class ControleInscricao {
                 ? ContextoDetalhe.CANCELAR : ContextoDetalhe.INSCREVER;
     }
 
+    // Otimizado: Busca linear mantida apenas se a Árvore B+ de ParUsuarioInscricao retornar múltiplos
     private Inscricao buscarInscricao(int idUsuario, int idCurso) throws Exception {
-        for (Inscricao ins : arqInscricao.listarPorUsuario(idUsuario)) {
+        ArrayList<Inscricao> inscricoes = arqInscricao.listarPorUsuario(idUsuario);
+        for (Inscricao ins : inscricoes) {
             if (ins.getIdCurso() == idCurso) {
                 return ins;
             }
@@ -244,16 +245,21 @@ public class ControleInscricao {
         return null;
     }
 
+    // Refatorado para usar as propriedades dinâmicas do objeto do TP2
     private String validarInscricao(Curso curso, int idUsuario) {
         if (curso.getIdUsuario() == idUsuario) {
             return "Você não pode se inscrever no seu próprio curso.";
         }
-        switch (curso.getEstado()) {
-            case 1: return "As inscrições estão encerradas para este curso.";
-            case 2: return "Este curso já foi realizado.";
-            case 3: return "Este curso foi cancelado.";
-            default: return null;
+        if (curso.inscricoesEncerradas()) {
+            return "As inscrições estão encerradas para este curso.";
         }
+        if (curso.estaConcluido()) {
+            return "Este curso já foi realizado.";
+        }
+        if (curso.estaCancelado()) {
+            return "Este curso foi cancelado.";
+        }
+        return null;
     }
 
     private String resolverNomeAutor(Curso curso) {
@@ -267,8 +273,8 @@ public class ControleInscricao {
     }
 
     public void close() throws Exception {
-        arqCurso.close();
-        arqUsuario.close();
-        arqInscricao.close();
+        if (arqCurso != null) arqCurso.close();
+        if (arqUsuario != null) arqUsuario.close();
+        if (arqInscricao != null) arqInscricao.close();
     }
 }
