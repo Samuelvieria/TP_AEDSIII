@@ -1,15 +1,13 @@
 package arquivos;
 
+import aed3.Arquivo;
+import aed3.ArvoreBMais;
+import aed3.HashExtensivel;
 import entidades.Curso;
 import indices.ParCodigoId;
 import indices.ParNomeCursoId;
 import indices.ParUsuarioCursoId;
-
 import java.util.ArrayList;
-
-import aed3.Arquivo;
-import aed3.ArvoreBMais;
-import aed3.HashExtensivel;
 
 public class ArquivoCurso extends Arquivo<Curso> {
 
@@ -98,11 +96,23 @@ public class ArquivoCurso extends Arquivo<Curso> {
     }
 
     // Busca curso pelo código (hash). Retorna o curso ou null.
+    //Nova versao que evita colisao
     public Curso readCodigo(String codigo) throws Exception {
+
+        if (codigo == null || codigo.isEmpty())
+            return null;
+    
         int hash = Math.abs(codigo.hashCode());
+    
         ParCodigoId pc = indiceCodigo.read(hash);
+    
         if (pc == null)
             return null;
+    
+        // evita colisão de hash
+        if (!pc.getCodigo().equals(codigo))
+            return null;
+    
         return super.read(pc.getIdCurso());
     }
 
@@ -141,6 +151,45 @@ public class ArquivoCurso extends Arquivo<Curso> {
                     lista.add(c);
             }
         }
+        return lista;
+    }
+
+    //nova funcao
+
+    public ArrayList<Curso> listarTodos() throws Exception {
+
+        ArrayList<Curso> lista = new ArrayList<>();
+    
+        arquivo.seek(TAM_CABECALHO);
+    
+        while (arquivo.getFilePointer() < arquivo.length()) {
+    
+            byte lapide = arquivo.readByte();
+            short tam = arquivo.readShort();
+    
+            byte[] dados = new byte[tam];
+            arquivo.read(dados);
+    
+            if (lapide == ' ') {
+    
+                Curso c = new Curso();
+                c.fromByteArray(dados);
+    
+                lista.add(c);
+            }
+        }
+    
+        return lista;
+    }
+
+    public ArrayList<Curso> listarCursosOrdenadosPorData() throws Exception {
+
+        ArrayList<Curso> lista = listarTodos();
+    
+        lista.sort((c1, c2) ->
+            c1.getDataInicio().compareTo(c2.getDataInicio())
+        );
+    
         return lista;
     }
 
@@ -206,7 +255,7 @@ public class ArquivoCurso extends Arquivo<Curso> {
             return false;
 
         try {
-            indiceCodigo.delete(id);
+            indiceCodigo.delete(Math.abs(c.getCodigo().hashCode()));
             indiceNome.delete(new ParNomeCursoId(c.getNome(), id));
             indiceUsuario.delete(new ParUsuarioCursoId(c.getIdUsuario(), id));
 

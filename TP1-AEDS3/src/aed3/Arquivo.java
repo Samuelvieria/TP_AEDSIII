@@ -6,9 +6,9 @@ public class Arquivo<T extends InterfaceEntidade> {
 
     String nomeEntidade;
     Constructor<T> construtor;
-    RandomAccessFile arquivo;
+    protected RandomAccessFile arquivo;
     HashExtensivel<ParIDEndereco> indiceDireto;
-    public final int TAM_CABECALHO = 12;
+    protected final int TAM_CABECALHO = 12;
 
     public Arquivo(String nomeEntidade, Constructor<T> construtor) throws Exception {
 

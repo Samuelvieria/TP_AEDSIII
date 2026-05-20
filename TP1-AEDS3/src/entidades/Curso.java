@@ -102,6 +102,54 @@ public class Curso implements InterfaceEntidade {
         this.idUsuario = idUsuario;
     }
 
+    //novas funcoes tp_02
+    public boolean estaAtivo() {
+        return estado == 0;
+    }
+    
+    public boolean inscricoesEncerradas() {
+        return estado == 1;
+    }
+    
+    public boolean estaConcluido() {
+        return estado == 2;
+    }
+    
+    public boolean estaCancelado() {
+        return estado == 3;
+    }
+    
+    public boolean aceitaInscricao() {
+        return estado == 0;
+    }
+
+    public boolean possuiInscricoes(int idCurso) {
+
+        try {
+    
+            // TODO:
+            // integrar com ArquivoInscricao
+    
+            // Exemplo futuro:
+            //
+            // ArquivoInscricao arqInscricao =
+            //     new ArquivoInscricao();
+            //
+            // return arqInscricao
+            //     .possuiInscricoesCurso(idCurso);
+    
+            return false;
+    
+        } catch (Exception e) {
+    
+            System.err.println(
+                "Erro ao verificar inscrições do curso: "
+                + e.getMessage());
+    
+            return true;
+        }
+    }
+
     // Serialização compatível com Arquivo<T>
     @Override
     public byte[] toByteArray() throws Exception {

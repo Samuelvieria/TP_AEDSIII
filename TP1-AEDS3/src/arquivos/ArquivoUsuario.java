@@ -1,14 +1,12 @@
 package arquivos;
 
+import aed3.Arquivo;
+import aed3.HashExtensivel;
 import entidades.Curso;
 import entidades.Usuario;
 import indices.ParEmailId;
-
 import java.io.IOException;
 import java.util.ArrayList;
-
-import aed3.Arquivo;
-import aed3.HashExtensivel;
 
 public class ArquivoUsuario extends Arquivo<Usuario> {
 
@@ -155,7 +153,7 @@ public class ArquivoUsuario extends Arquivo<Usuario> {
         }
 
         // Verificar se possui cursos ativos
-        if (possuiCursosAtivos(id)) {
+        if (possuiCursosAtivos(id) || possuiInscricoes(id)) {
             throw new Exception("Usuário possui cursos ativos e não pode ser excluído");
         }
 
@@ -203,9 +201,8 @@ public class ArquivoUsuario extends Arquivo<Usuario> {
             arqCurso = new ArquivoCurso();
             ArrayList<Curso> cursos = arqCurso.listarPorUsuario(idUsuario);
             for (Curso c : cursos) {
-                byte estado = c.getEstado();
-                // Considera ativo ou encerrado como impeditivo
-                if (estado == 0 || estado == 1) {
+                //pequena mudanca
+                if (c.estaAtivo() || c.inscricoesEncerradas()) {
                     return true;
                 }
             }
@@ -220,6 +217,33 @@ public class ArquivoUsuario extends Arquivo<Usuario> {
                 } catch (Exception e) {
                 }
             }
+        }
+    }
+
+    private boolean possuiInscricoes(int idUsuario) {
+
+        try {
+    
+            // TODO:
+            // integrar com ArquivoInscricao quando estiver pronto
+    
+            // Exemplo futuro:
+            //
+            // ArquivoInscricao arqInscricao =
+            //     new ArquivoInscricao();
+            //
+            // return arqInscricao
+            //     .possuiInscricoesUsuario(idUsuario);
+    
+            return false;
+    
+        } catch (Exception e) {
+    
+            System.err.println(
+                "Erro ao verificar inscrições do usuário: "
+                + e.getMessage());
+    
+            return true;
         }
     }
 
