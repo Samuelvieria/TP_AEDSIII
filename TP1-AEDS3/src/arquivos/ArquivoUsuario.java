@@ -1,14 +1,12 @@
 package arquivos;
 
+import aed3.Arquivo;
+import aed3.HashExtensivel;
 import entidades.Curso;
 import entidades.Usuario;
 import indices.ParEmailId;
-
 import java.io.IOException;
 import java.util.ArrayList;
-
-import aed3.Arquivo;
-import aed3.HashExtensivel;
 
 public class ArquivoUsuario extends Arquivo<Usuario> {
 
@@ -18,14 +16,17 @@ public class ArquivoUsuario extends Arquivo<Usuario> {
     private static final boolean DEBUG = false;
 
     public ArquivoUsuario() throws Exception {
-        super("usuario", Usuario.class.getConstructor());
+        // Padronizado com o nome correto da entidade no plural ("usuarios")
+        super("usuarios", Usuario.class.getConstructor());
 
         try {
+            // Caminhos corrigidos para a pasta unificada de dados do projeto, sem subpastas
+            // conflitantes
             indiceEmail = new HashExtensivel<>(
                     ParEmailId.class.getConstructor(),
-                    4, // tamanho do cesto
-                    "./dados/usuario/indiceEmail.d.db",
-                    "./dados/usuario/indiceEmail.c.db");
+                    5, // tamanho do cesto ajustado para o padrão
+                    "dados/usuarios_email.idx",
+                    "dados/usuarios_email.dir");
         } catch (Exception e) {
             System.err.println("Erro ao inicializar índice de email: " + e.getMessage());
             throw e;
@@ -60,7 +61,7 @@ public class ArquivoUsuario extends Arquivo<Usuario> {
             if (DEBUG)
                 System.out.println("Índice de email atualizado.");
         } catch (Exception e) {
-            // tenta remover o registro recem criado
+            // tenta remover o registro recem criado (rollback)
             super.delete(id);
             throw new Exception("Falha ao criar índice de email: " + e.getMessage(), e);
         }
@@ -129,7 +130,7 @@ public class ArquivoUsuario extends Arquivo<Usuario> {
 
         boolean atualizado = super.update(novoUsuario);
         if (!atualizado) {
-            // Rollback do índice
+            // Rollback do índice em caso de falha física de escrita
             if (emailAlterado) {
                 indiceEmail.create(new ParEmailId(antigo.getEmail(), antigo.getID()));
             }
@@ -154,9 +155,9 @@ public class ArquivoUsuario extends Arquivo<Usuario> {
             return false;
         }
 
-        // Verificar se possui cursos ativos
-        if (possuiCursosAtivos(id)) {
-            throw new Exception("Usuário possui cursos ativos e não pode ser excluído");
+        // Verificar integridade: impede se possuir cursos criados ou inscrições ativas
+        if (possuiCursosAtivos(id) || possuiInscricoes(id)) {
+            throw new Exception("Usuário possui vínculos ativos (cursos ou inscrições) e não pode ser excluído");
         }
 
         // Remove índice de email
@@ -196,28 +197,50 @@ public class ArquivoUsuario extends Arquivo<Usuario> {
         return readEmail(email) != null;
     }
 
-    // ------------- MÉTODO AUXILIAR -------------
+    // ------------- MÉTODOS AUXILIARES DE INTEGRIDADE -------------
     private boolean possuiCursosAtivos(int idUsuario) {
         ArquivoCurso arqCurso = null;
         try {
             arqCurso = new ArquivoCurso();
             ArrayList<Curso> cursos = arqCurso.listarPorUsuario(idUsuario);
             for (Curso c : cursos) {
-                byte estado = c.getEstado();
-                // Considera ativo ou encerrado como impeditivo
-                if (estado == 0 || estado == 1) {
+                // Utilizando os métodos lógicos corretos do modelo de dados
+                if (c.estaAtivo() || c.inscricoesEncerradas()) {
                     return true;
                 }
             }
             return false;
         } catch (Exception e) {
             System.err.println("Erro ao verificar cursos ativos: " + e.getMessage());
-            return true; // por segurança, impede exclusão se houver erro
+            return true; // Por segurança, impede exclusão se houver erro de leitura
         } finally {
             if (arqCurso != null) {
                 try {
                     arqCurso.close();
                 } catch (Exception e) {
+                    // Ignora falhas silenciosas de fechamento no escopo local
+                }
+            }
+        }
+    }
+
+    private boolean possuiInscricoes(int idUsuario) {
+        ArquivoInscricao arqInscricao = null;
+        try {
+            arqInscricao = new ArquivoInscricao();
+
+            // CORREÇÃO: Integrado de forma robusta à sua Árvore B+ usando o método indexado
+            return !arqInscricao.listarPorUsuario(idUsuario).isEmpty();
+
+        } catch (Exception e) {
+            System.err.println("Erro ao verificar inscrições do usuário: " + e.getMessage());
+            return true; // Por segurança, impede a exclusão caso o índice falhe
+        } finally {
+            if (arqInscricao != null) {
+                try {
+                    arqInscricao.close();
+                } catch (Exception e) {
+                    // Ignora falhas silenciosas de fechamento no escopo local
                 }
             }
         }

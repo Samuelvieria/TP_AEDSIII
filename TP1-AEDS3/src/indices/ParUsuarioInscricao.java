@@ -29,8 +29,8 @@ public class ParUsuarioInscricao implements InterfaceArvoreBMais<ParUsuarioInscr
     }
 
     public int getIdInscricao() {
-    return this.idInscricao;
-}
+        return this.idInscricao;
+    }
 
     @Override
     public ParUsuarioInscricao clone() {
@@ -46,10 +46,13 @@ public class ParUsuarioInscricao implements InterfaceArvoreBMais<ParUsuarioInscr
     public int compareTo(ParUsuarioInscricao o) {
         // Primeiro compara pelo ID do usuário (chave principal)
         int comp = Integer.compare(this.idUsuario, o.idUsuario);
-        if (comp != 0) return comp;
+        if (comp != 0)
+            return comp;
 
-        // Se o ID da inscrição for -1 (modo busca), considera igual se o usuário for o mesmo
-        if (this.idInscricao == -1 || o.idInscricao == -1) return 0;
+        // Se o ID da inscrição for -1 (modo busca), considera igual se o usuário for o
+        // mesmo
+        if (this.idInscricao == -1 || o.idInscricao == -1)
+            return 0;
 
         // Caso contrário, desempata pelo ID da inscrição (chave secundária)
         return Integer.compare(this.idInscricao, o.idInscricao);

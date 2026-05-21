@@ -27,7 +27,7 @@ public class VisaoUsuario {
     // Opções: (A) Login, (B) Novo usuário, (C) Recuperar senha, (S) Sair
     public String menuAutenticacao() {
         System.out.println("\n\nEntrePares 1.0");
-        System.out.println(    "--------------");
+        System.out.println("--------------");
         System.out.println("\n> Início\n");
         System.out.println("(A) Login");
         System.out.println("(B) Novo usuário");
@@ -40,7 +40,7 @@ public class VisaoUsuario {
     // Exibe o menu "Meus dados" (acessível após login) e retorna a opção escolhida.
     public String menuMeusDados() {
         System.out.println("\n\nEntrePares 1.0");
-        System.out.println(    "--------------");
+        System.out.println("--------------");
         System.out.println("\n> Início > Meus dados\n");
         System.out.println("(A) Exibir meus dados");
         System.out.println("(B) Alterar meus dados");
@@ -71,6 +71,13 @@ public class VisaoUsuario {
                 System.out.println("Nome não pode ser vazio.");
         } while (nome.isEmpty());
         return nome;
+    }
+
+    // Método para exibir o bloco da pergunta
+    public void mostrarPerguntaSecreta(String pergunta) {
+        System.out.println("\n------------------------------------------------");
+        System.out.println("PERGUNTA SECRETA: " + pergunta);
+        System.out.println("------------------------------------------------");
     }
 
     // Lê o email do usuário (validação simples de formato).

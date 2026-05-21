@@ -10,7 +10,7 @@ import java.io.IOException;
 public class ParUsuarioCursoId implements InterfaceArvoreBMais<ParUsuarioCursoId> {
 
     private int usuarioId; // ID do dono do curso
-    private int idCurso;   // ID do curso
+    private int idCurso; // ID do curso
     private final short TAMANHO = 8; // 4 bytes (int) + 4 bytes (int)
 
     // Constante para logs de debug
@@ -37,7 +37,7 @@ public class ParUsuarioCursoId implements InterfaceArvoreBMais<ParUsuarioCursoId
         return usuarioId;
     }
 
-    public int getId() {   // O ArquivoCurso procura por este nome
+    public int getId() { // O ArquivoCurso procura por este nome
         return idCurso;
     }
 
@@ -57,12 +57,13 @@ public class ParUsuarioCursoId implements InterfaceArvoreBMais<ParUsuarioCursoId
         if (this.usuarioId != o.usuarioId) {
             return Integer.compare(this.usuarioId, o.usuarioId);
         }
-        
-        // Se o ID do curso for -1 (modo busca), considera igual para retornar todos os cursos daquele usuário
+
+        // Se o ID do curso for -1 (modo busca), considera igual para retornar todos os
+        // cursos daquele usuário
         if (this.idCurso == -1 || o.idCurso == -1) {
             return 0;
         }
-            
+
         // Se ambos tiverem IDs, desempata pelo ID do curso (chave secundária)
         return Integer.compare(this.idCurso, o.idCurso);
     }

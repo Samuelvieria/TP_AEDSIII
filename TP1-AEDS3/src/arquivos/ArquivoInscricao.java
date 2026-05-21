@@ -30,47 +30,104 @@ public class ArquivoInscricao extends Arquivo<Inscricao> {
 
     @Override
     public int create(Inscricao obj) throws Exception {
+        if (obj == null)
+            throw new IllegalArgumentException("Inscrição inválida.");
 
-        // Validação de duplicatas
-        // Antes de criar, verificamos se esse usuário já está nesse curso
+        // CORREÇÃO: Busca usando o par completo (idUsuario, -1) para mapeamento seguro
+        // na Árvore B+
         ArrayList<ParUsuarioInscricao> inscricoesExistentes = indiceUsuario
-                .read(new ParUsuarioInscricao(obj.getIdUsuario()));
+                .read(new ParUsuarioInscricao(obj.getIdUsuario(), -1));
 
-        for (ParUsuarioInscricao p : inscricoesExistentes) {
-            // Lemos a inscrição completa para checar o ID do curso
-            Inscricao aux = super.read(p.getIdInscricao());
-            if (aux != null && aux.getIdCurso() == obj.getIdCurso()) {
-                // Se encontrar uma inscrição com o mesmo par Usuário/Curso, cancela a inserção
-                throw new Exception("Erro: O usuário já está inscrito neste curso!");
+        if (inscricoesExistentes != null) {
+            for (ParUsuarioInscricao p : inscricoesExistentes) {
+                Inscricao aux = super.read(p.getIdInscricao());
+                if (aux != null && aux.getIdCurso() == obj.getIdCurso()) {
+                    throw new Exception("Erro: O usuário já está inscrito neste curso!");
+                }
             }
         }
 
-        // Se passou pela verificação, segue o fluxo normal
+        // Se passou pela verificação, segue o fluxo normal de persistência física
         int id = super.create(obj);
         obj.setID(id);
 
-        indiceUsuario.create(new ParUsuarioInscricao(obj.getIdUsuario(), id));
-        indiceCurso.create(new ParCursoInscricao(obj.getIdCurso(), id));
+        try {
+            indiceUsuario.create(new ParUsuarioInscricao(obj.getIdUsuario(), id));
+            indiceCurso.create(new ParCursoInscricao(obj.getIdCurso(), id));
+        } catch (Exception e) {
+            super.delete(id); // Rollback físico se falhar o índice
+            throw new Exception("Erro ao criar índices de inscrição: " + e.getMessage());
+        }
 
         return id;
     }
 
     @Override
     public boolean delete(int id) throws Exception {
-        // 1. Lê o objeto para saber as chaves (usuário e curso) que estão nos índices
         Inscricao obj = super.read(id);
 
         if (obj != null) {
-            // 2. Remove dos índices usando os dados que acabamos de ler
-            // IMPORTANTE: O segundo parâmetro do par deve ser o ID do registro (o mesmo
-            // usado no create)
-            boolean d1 = indiceUsuario.delete(new ParUsuarioInscricao(obj.getIdUsuario(), id));
-            boolean d2 = indiceCurso.delete(new ParCursoInscricao(obj.getIdCurso(), id));
+            // Remove dos índices usando os dados que acabamos de ler
+            indiceUsuario.delete(new ParUsuarioInscricao(obj.getIdUsuario(), id));
+            indiceCurso.delete(new ParCursoInscricao(obj.getIdCurso(), id));
 
-            // 3. Deleta o registro físico
+            // Deleta o registro físico
             return super.delete(id);
         }
         return false;
+    }
+
+    // ---------------- UPDATE ----------------
+    // Atualiza uma inscrição existente.
+    // Se o usuário ou o curso vinculados mudarem, reorganiza as Árvores B+.
+    @Override
+    public boolean update(Inscricao nova) throws Exception {
+        if (nova == null)
+            return false;
+
+        // 1. Lê o estado antigo do registro para saber o que estava nos índices
+        Inscricao antiga = super.read(nova.getID());
+        if (antiga == null)
+            return false; // Registro não encontrado para atualizar
+
+        // Verifica se houve mudança nas chaves indexadas
+        boolean usuarioAlterado = antiga.getIdUsuario() != nova.getIdUsuario();
+        boolean cursoAlterado = antiga.getIdCurso() != nova.getIdCurso();
+
+        try {
+            // 2. Se mudou algo, remove os índices antigos antes de atualizar o arquivo
+            if (usuarioAlterado) {
+                indiceUsuario.delete(new ParUsuarioInscricao(antiga.getIdUsuario(), antiga.getID()));
+            }
+            if (cursoAlterado) {
+                indiceCurso.delete(new ParCursoInscricao(antiga.getIdCurso(), antiga.getID()));
+            }
+
+            // 3. Atualiza o registro no arquivo físico base
+            boolean atualizado = super.update(nova);
+
+            if (!atualizado) {
+                // Rollback: se a escrita no arquivo falhar, reinsere os índices antigos
+                if (usuarioAlterado)
+                    indiceUsuario.create(new ParUsuarioInscricao(antiga.getIdUsuario(), antiga.getID()));
+                if (cursoAlterado)
+                    indiceCurso.create(new ParCursoInscricao(antiga.getIdCurso(), antiga.getID()));
+                return false;
+            }
+
+            // 4. Insere os novos índices atualizados
+            if (usuarioAlterado) {
+                indiceUsuario.create(new ParUsuarioInscricao(nova.getIdUsuario(), nova.getID()));
+            }
+            if (cursoAlterado) {
+                indiceCurso.create(new ParCursoInscricao(nova.getIdCurso(), nova.getID()));
+            }
+
+            return true;
+
+        } catch (Exception e) {
+            throw new Exception("Erro ao atualizar índices da inscrição: " + e.getMessage(), e);
+        }
     }
 
     // --- MÉTODOS DE BUSCA DA ARVORE B+ ---
@@ -78,14 +135,16 @@ public class ArquivoInscricao extends Arquivo<Inscricao> {
     public ArrayList<Inscricao> listarPorUsuario(int idUsuario) throws Exception {
         ArrayList<Inscricao> lista = new ArrayList<>();
 
-        // O método read da ArvoreBMais do professor retorna um ArrayList<T>
-        ArrayList<ParUsuarioInscricao> pui = indiceUsuario.read(new ParUsuarioInscricao(idUsuario));
+        // CORREÇÃO: Passando o construtor com o id de registro -1 para listagem por
+        // prefixo de chave
+        ArrayList<ParUsuarioInscricao> pui = indiceUsuario.read(new ParUsuarioInscricao(idUsuario, -1));
 
-        for (int i = 0; i < pui.size(); i++) {
-            // Buscamos o objeto completo no arquivo de dados usando o ID guardado no par
-            Inscricao ins = super.read(pui.get(i).getIdInscricao());
-            if (ins != null) {
-                lista.add(ins);
+        if (pui != null) {
+            for (int i = 0; i < pui.size(); i++) {
+                Inscricao ins = super.read(pui.get(i).getIdInscricao());
+                if (ins != null) {
+                    lista.add(ins);
+                }
             }
         }
         return lista;
@@ -94,21 +153,40 @@ public class ArquivoInscricao extends Arquivo<Inscricao> {
     public ArrayList<Inscricao> listarPorCurso(int idCurso) throws Exception {
         ArrayList<Inscricao> lista = new ArrayList<>();
 
-        ArrayList<ParCursoInscricao> pci = indiceCurso.read(new ParCursoInscricao(idCurso));
+        // CORREÇÃO: Passando o construtor com o id de registro -1 para buscar relações
+        // do curso
+        ArrayList<ParCursoInscricao> pci = indiceCurso.read(new ParCursoInscricao(idCurso, -1));
 
-        for (int i = 0; i < pci.size(); i++) {
-            Inscricao ins = super.read(pci.get(i).getIdInscricao());
-            if (ins != null) {
-                lista.add(ins);
+        if (pci != null) {
+            for (int i = 0; i < pci.size(); i++) {
+                Inscricao ins = super.read(pci.get(i).getIdInscricao());
+                if (ins != null) {
+                    lista.add(ins);
+                }
             }
         }
         return lista;
     }
 
+    public Inscricao buscarRelacao(int idUsuario, int idCurso) throws Exception {
+        ArrayList<Inscricao> inscricoesDoUsuario = this.listarPorUsuario(idUsuario);
+
+        if (inscricoesDoUsuario != null) {
+            for (Inscricao insc : inscricoesDoUsuario) {
+                if (insc.getIdCurso() == idCurso) {
+                    return insc;
+                }
+            }
+        }
+        return null;
+    }
+
     @Override
     public void close() throws Exception {
         super.close();
-        indiceUsuario.close();
-        indiceCurso.close();
+        if (indiceUsuario != null)
+            indiceUsuario.close();
+        if (indiceCurso != null)
+            indiceCurso.close();
     }
 }

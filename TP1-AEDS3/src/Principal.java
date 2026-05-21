@@ -1,5 +1,5 @@
 import controle.ControleCurso;
-import controle.ControleInscricao;
+import controle.ControleInscricoes;
 import controle.ControleUsuario;
 
 import java.util.Scanner;
@@ -20,7 +20,7 @@ public class Principal {
             // visões)
             ControleUsuario ctrlUsuario = new ControleUsuario(console);
             ControleCurso ctrlCurso = new ControleCurso(console);
-            ControleInscricao ctrlInscricao = new ControleInscricao(console);
+            ControleInscricoes ctrlInscricao = new ControleInscricoes(console);
 
             if (DEBUG)
                 System.out.println("[DEBUG] Sistema iniciado. Iniciando autenticação...");
@@ -53,7 +53,7 @@ public class Principal {
                     case "C":
                         if (DEBUG)
                             System.out.println("[DEBUG] Acessando 'Minhas inscrições'.");
-                        ctrlInscricao.menuMinhasInscricoes();
+                        ctrlInscricao.menuPrincipalInscricoes();
                         break;
                     case "P":
                         if (DEBUG)
