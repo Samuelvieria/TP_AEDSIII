@@ -1,201 +1,342 @@
-# EntrePares 1.0 - TP1
+# EntrePares 2.0 - TP2
 
-**Disciplina:** AEDS III  
-**Instituição:** PUC Minas  
-**Professor:** Marcos Kutova  
+**Disciplina:** AEDS III
+**Instituição:** PUC Minas
+**Professor:** Marcos Kutova
 **Período:** 1º semestre de 2026
+
+---
+
+## 🎥 Link do Vídeo
+
+apresentação do TP2:
+
+`https://SEU-LINK-AQUI`
 
 ---
 
 ## 👥 Participantes
 
-- Marco Antonio Barbosa Martins de Souza
-- Samuel Ferreira Alves Vieira
-- Eduardo Nunes Neumann
-- Savio Rangel de Faria
-
----
-
-## Link do vídeo 
-
-https://youtu.be/1f93MSxZod4
+* Marco Antonio Barbosa Martins de Souza
+* Samuel Ferreira Alves Vieira
+* Eduardo Nunes Neumann
+* Savio Rangel de Faria
 
 ---
 
 ## 📖 Descrição do Sistema
 
-O EntrePares 1.0 é um sistema de gestão de cursos livres desenvolvido como primeiro trabalho prático da disciplina de Algoritmos e Estruturas de Dados III. 
-A aplicação permite que usuários se cadastrem, façam login e gerenciem seus próprios cursos, estabelecendo um relacionamento 1:N entre usuário e cursos.
+O EntrePares 2.0 é a evolução do sistema de gestão de cursos livres desenvolvido na disciplina de Algoritmos e Estruturas de Dados III. Nesta segunda etapa do projeto, o sistema passou a suportar o relacionamento N:N entre usuários e cursos por meio da entidade `Inscricao`, permitindo que usuários se inscrevam em cursos criados por outros usuários.
 
-### Funcionalidades Implementadas
-
-- Autenticação de Usuários
-  - Cadastro de novo usuário com validação de email único.
-  - Login por email e senha (hash armazenado).
-  - Recuperação de senha via pergunta/resposta secreta.
-
-- Gerenciamento de Usuários (Meus Dados)
-  - Visualização dos dados do perfil.
-  - Alteração de nome, email e senha.
-  - Exclusão da própria conta.
-
-- Gerenciamento de Cursos (Meus Cursos)
-  - Criação de cursos com geração automática de código compartilhável (NanoID 10 caracteres).
-  - Listagem ordenada alfabeticamente dos cursos do usuário logado.
-  - Visualização detalhada de cada curso.
-  - Edição dos dados do curso (nome, descrição, data de início).
-  - Alteração de estado do curso:
-    - Encerrar inscrições (0 → 1)
-    - Concluir curso (0/1 → 2)
-    - Cancelar / Excluir curso (remoção lógica)
-  - Isolamento de dados: cada usuário vê apenas seus próprios cursos.
-
-- Persistência e Índices
-  - Armazenamento em arquivos com registros de tamanho variável e reaproveitamento de espaço.
-  - Índice direto baseado em **Hash Extensível** (ID → endereço).
-  - Índice de email com **Hash Extensível** (busca exata).
-  - Índice de código de curso com **Hash Extensível**.
-  - Índice de nome de curso com **Árvore B+** (permite duplicatas e busca ordenada).
-  - Índice de relacionamento 1:N (usuário → cursos) com **Árvore B+**.
+O sistema mantém toda a infraestrutura do TP1 — autenticação, gerenciamento de cursos, persistência em arquivos, Hash Extensível e Árvores B+ — acrescentando mecanismos de inscrição, listagem de participantes, controle de estados do curso e exportação de relatórios.
 
 ---
 
-## 📁 Estrutura de Pacotes e Classes Criadas
+# ✅ Funcionalidades Implementadas
 
-- **`aed3/`** – Classes genéricas fornecidas
-  - `Arquivo.java`
-  - `HashExtensivel.java`
-  - `ArvoreBMais.java`
-  - `InterfaceEntidade.java`
-  - `InterfaceHashExtensivel.java`
-  - `InterfaceArvoreBMais.java`
-  - `ParIDEndereco.java`
+## 👤 Usuários
 
-- **`entidades/`**
-  - `Usuario.java` – entidade usuário
-  - `Curso.java` – entidade curso
-
-- **`indices/`**
-  - `ParEmailId.java` – par (email → idUsuario)
-  - `ParCodigoId.java` – par (código → idCurso)
-  - `ParNomeCursoId.java` – par (nome → idCurso)
-  - `ParUsuarioCursoId.java` – par (idUsuario → idCurso)
-
-- **`arquivos/`**
-  - `ArquivoUsuario.java` – CRUD de usuários + índices
-  - `ArquivoCurso.java` – CRUD de cursos + índices
-
-- **`visao/`**
-  - `VisaoUsuario.java` – interface textual para usuário
-  - `VisaoCurso.java` – interface textual para cursos
-
-- **`controle/`**
-  - `Sessao.java` – gerência do usuário logado
-  - `ControleUsuario.java` – lógica de autenticação e perfil
-  - `ControleCurso.java` – lógica de gestão de cursos
-
-- **`testes/`**
-  - `PopularBD.java` – popula base com dados de exemplo
-
-- `Principal.java` – classe principal com menu
+* Cadastro de usuários com validação de email único.
+* Login utilizando email e senha.
+* Recuperação de senha via pergunta secreta.
+* Alteração de dados cadastrais.
+* Exclusão da própria conta.
+* Verificação de integridade referencial antes da exclusão.
 
 ---
 
+## 📚 Cursos
 
-## 🖼️ Telas do Sistema
+* Criação de cursos com geração automática de NanoID.
+* Alteração de dados do curso.
+* Alteração de estados:
 
-| Descrição | Imagem |
-|:----------|:-------|
-| **Menu Principal** | <img width="477" alt="Menu" src="https://github.com/user-attachments/assets/e2e18794-3105-4ac7-8e5f-44e668a2ecd2"> |
-| **Novo cadastro de usuário** | <img width="477" alt="Novo cadastro" src="https://github.com/user-attachments/assets/c66faf3d-131b-4b11-b5b7-54bb313ea366"> |
-| **Login** | <img width="477" alt="Login" src="https://github.com/user-attachments/assets/0f39b40c-a21c-4fc8-9ea3-d3d375fa2726"> |
-| **Dados do usuário** | <img width="477" alt="Dados do usuario" src="https://github.com/user-attachments/assets/d71311f7-0191-4e86-90ce-485caff2c966"> |
-| **Alterar dados do usuário** | <img width="477" alt="alterar dados usuario" src="https://github.com/user-attachments/assets/62bb6b93-105e-4f90-a71b-a9c58edd2f04"> |
-| **Alterar senha do usuário** | <img width="477" alt="alterar senha usuario" src="https://github.com/user-attachments/assets/fa22190a-fd4e-405a-a71c-547d06356448"> |
-| **Menu Curso** | <img width="477" alt="Menu curso" src="https://github.com/user-attachments/assets/29c91294-6a38-42d0-832f-795dedcde5be"> |
-| **Novo curso** | <img width="477" alt="Novo curso" src="https://github.com/user-attachments/assets/845d76d0-a88c-493e-95fd-d370f7a81b2c"> |
-| **Dados do curso** | <img width="477" alt="alterar curso" src="https://github.com/user-attachments/assets/cbcf7592-d980-4225-9178-b802ded2f6c8"> |
-| **Alterar dados do curso** | <img width="477" alt="dados curso" src="https://github.com/user-attachments/assets/5be4261d-35f3-4b15-9c93-25729c26e180"> |
-
-
-
-
+  * Ativo
+  * Inscrições encerradas
+  * Concluído
+  * Cancelado
+* Listagem ordenada de cursos por data.
+* Busca de cursos por código compartilhável.
+* Controle de integridade referencial.
 
 ---
 
-## ⚙️ Operações Especiais Implementadas
+## 📝 Inscrições (Relacionamento N:N)
 
-- **Geração de código compartilhável (NanoID):** Um código alfanumérico de 10 caracteres é gerado aleatoriamente no momento da criação do curso, garantindo unicidade e servindo como identificador público do curso.
+* Inscrição de usuários em cursos.
+* Cancelamento de inscrição.
+* Listagem de cursos inscritos pelo usuário.
+* Listagem de inscritos em um curso.
+* Impedimento de inscrições duplicadas.
+* Impedimento de inscrição em cursos:
 
-- **Recuperação de senha via pergunta secreta:** O usuário pode redefinir sua senha respondendo corretamente à pergunta secreta cadastrada, sem necessidade de intervenção externa.
-
-- **Transições de estado do curso:** O sistema controla as mudanças de estado (0=Ativo → 1=Encerrado → 2=Concluído / 3=Cancelado) com validações que impedem transições inválidas.
-
-- **Isolamento de dados por usuário:** Cada usuário visualiza exclusivamente seus próprios cursos, graças ao índice `ArvoreBMais<ParUsuarioCursoId>` e ao método `listarPorUsuario`.
-
-- **Listagem ordenada por nome:** A árvore B+ de nome de curso permite a recuperação ordenada alfabeticamente, ignorando acentos e diferenças de caixa, conforme exigido para o menu de seleção.
-
-- **Índices eficientes com Hash Extensível e Árvore B+:** O sistema utiliza tabelas hash extensíveis para buscas exatas (email, código do curso) e árvores B+ para buscas por faixa e relacionamentos 1:N, garantindo acesso rápido mesmo com grande volume de dados.
-
----
-
-## ✅ Checklist de Avaliação
-
-## Pergunta 1: Há um CRUD de usuários (que estende a classe ArquivoIndexado, acrescentando Tabelas Hash Extensíveis e Árvores B+ como índices diretos e indiretos conforme necessidade) que funciona corretamente?
-Sim. A classe ArquivoUsuario estende Arquivo<Usuario> (que internamente utiliza HashExtensivel<ParIDEndereco> para índice direto ID → endereço) e acrescenta 
-HashExtensivel<ParEmailId> para busca por email. Os métodos create, read, update, delete, login e recuperarSenha foram implementados e testados, comprovando o funcionamento 
-completo do CRUD com os índices exigidos.
-
-## Pergunta 2: Há um CRUD de cursos (que estende a classe ArquivoIndexado, acrescentando Tabelas Hash Extensíveis e Árvores B+ como índices diretos e indiretos conforme necessidade) que funciona corretamente?
-Sim. A classe ArquivoCurso estende Arquivo<Curso> e adiciona três índices: HashExtensivel<ParCodigoId> (busca por código compartilhável), ArvoreBMais<ParNomeCursoId> 
-(busca ordenada por nome) e ArvoreBMais<ParUsuarioCursoId> (relacionamento 1:N). Os métodos create, read, update, delete, listarPorUsuario e readNome operam corretamente, 
-atendendo a todos os requisitos de CRUD e indexação.
-
-## Pergunta 3: Os cursos estão vinculados aos usuários usando o idUsuario como chave estrangeira?
-Sim. A entidade Curso contém o atributo idUsuario, que é preenchido com o ID do usuário logado (Sessao.getIdUsuarioLogado()) durante a criação do curso. O índice 
-ParUsuarioCursoId armazena esse vínculo na árvore B+, garantindo a integridade referencial.
-
-## Pergunta 4: Há uma árvore B+ que registre o relacionamento 1:N entre usuários e cursos?
-Sim. O índice indiceUsuario em ArquivoCurso é uma ArvoreBMais<ParUsuarioCursoId>, onde a chave é o idUsuario. O método listarPorUsuario(int idUsuario) percorre essa árvore
-e retorna todos os cursos associados ao usuário, demonstrando claramente o relacionamento 1:N.
-
-## Pergunta 5: Há um CRUD de usuários (que estende a classe ArquivoIndexado, acrescentando Tabelas Hash Extensíveis e Árvores B+ como índices diretos e indiretos conforme necessidade)?
-Sim. A classe ArquivoUsuario estende a classe genérica Arquivo<Usuario> (que internamente utiliza uma Tabela Hash Extensível para o índice direto ParIDEndereco). 
-Além do índice direto obrigatório, ArquivoUsuario acrescenta um índice adicional baseado em Hash Extensível – ParEmailId – para busca rápida e validação de unicidade de 
-emails. Os métodos create, read, update, delete, bem como as operações específicas login e recuperarSenha, foram implementados e testados, garantindo o pleno funcionamento
-do CRUD de usuários com os índices exigidos.
-
-## Pergunta 6: O trabalho compila corretamente?
-Sim. O projeto compila sem erros utilizando o comando javac -d bin -sourcepath src src/**/*.java src/*.java, com todas as dependências resolvidas e pacotes organizados 
-conforme a estrutura definida.
-
-## Pergunta 7: O trabalho está completo e funcionando sem erros de execução?
-Sim. Todos os fluxos principais (autenticação, CRUD de usuário, CRUD de curso com vínculo, navegação entre menus, transições de estado dos cursos e persistência em arquivo) 
-foram testados e executam conforme as especificações, sem erros em tempo de execução.
-
-## Pergunta 8: O trabalho é original e não a cópia de um trabalho de outro grupo?
-Sim. O código foi desenvolvido pelo próprio grupo a partir das classes base fornecidas pelo professor (Arquivo, HashExtensivel, ArvoreBMais), adaptando e estendendo para as 
-entidades Usuario e Curso com índices personalizados (ParEmailId, ParCodigoId, ParNomeCursoId, ParUsuarioCursoId). As classes de visão e controle foram implementadas 
-seguindo o padrão MVC solicitado, sem reaproveitamento de código de outros grupos.
+  * cancelados
+  * concluídos
+  * com inscrições encerradas
 
 ---
 
-## ⁉️ Observações Adicionais
-A classe testes.PopularBD foi desenvolvida exclusivamente para agilizar a validação do sistema. Seu propósito é povoar o banco de dados com usuários e cursos de exemplo, 
-dispensando a necessidade de cadastros manuais repetitivos durante os testes.
+## 📊 Relatórios e Exportação
 
-## Funcionamento:
-Cria três usuários (joao@email.com, maria@email.com, carlos@email.com) com senhas padronizadas.
-Gera cinco cursos automaticamente, cada um vinculado ao respectivo usuário.
-Utiliza os mesmos métodos create() das classes ArquivoUsuario e ArquivoCurso, garantindo que todos os índices (Hash Extensível e Árvores B+) sejam corretamente atualizados.
-A opção (P) Popular BD (teste) está disponível no menu principal (após o login) e pode ser removida ou ocultada na versão final por meio da constante DEBUG.
+* Visualização dos inscritos em cada curso.
+* Exportação da lista de inscritos em formato CSV.
+* Relatórios utilizando Árvores B+ para recuperação eficiente.
 
-## Exibição dos IDs ao Usuário
-Durante as operações de cadastro, o sistema exibe intencionalmente o ID sequencial gerado para cada entidade:
-"Usuário cadastrado com sucesso! Seu ID é X."
-(Para cursos, o ID interno não é exibido, apenas o código compartilhável.)
+---
 
-## Objetivo dessa exibição:
-Demonstrar de forma transparente ao professor/avaliador que as inserções estão sendo realizadas de maneira sequencial e conforme as regras de geração de identificadores 
-únicos estabelecidas no enunciado do trabalho. Em um sistema em produção, essa informação provavelmente seria omitida, mas para fins de correção acadêmica ela evidencia o 
-correto funcionamento do mecanismo de chaves primárias.
+## ⚙️ Persistência e Estruturas de Dados
+
+* Persistência em arquivos de tamanho variável.
+* Reaproveitamento de espaços vazios.
+* Índice direto com Hash Extensível.
+* Índice de email com Hash Extensível.
+* Índice de código de curso com Hash Extensível.
+* Índice por nome de curso com Árvore B+.
+* Índice de relacionamento usuário → cursos com Árvore B+.
+* Índice de relacionamento usuário → inscrições com Árvore B+.
+* Índice de relacionamento curso → inscrições com Árvore B+.
+
+---
+
+# 📁 Estrutura de Pacotes e Classes
+
+## `aed3/`
+
+Classes genéricas fornecidas:
+
+* `Arquivo.java`
+* `HashExtensivel.java`
+* `ArvoreBMais.java`
+* `InterfaceEntidade.java`
+* `InterfaceHashExtensivel.java`
+* `InterfaceArvoreBMais.java`
+* `ParIDEndereco.java`
+
+---
+
+## `entidades/`
+
+* `Usuario.java`
+* `Curso.java`
+* `Inscricao.java`
+
+---
+
+## `indices/`
+
+* `ParEmailId.java`
+* `ParCodigoId.java`
+* `ParNomeCursoId.java`
+* `ParUsuarioCursoId.java`
+* `ParUsuarioInscricao.java`
+* `ParCursoInscricao.java`
+
+---
+
+## `arquivos/`
+
+* `ArquivoUsuario.java`
+* `ArquivoCurso.java`
+* `ArquivoInscricao.java`
+
+---
+
+## `controle/`
+
+* `ControleUsuario.java`
+* `ControleCurso.java`
+* `ControleInscricao.java`
+* `Sessao.java`
+
+---
+
+## `visao/`
+
+* `VisaoUsuario.java`
+* `VisaoCurso.java`
+* `VisaoInscricao.java`
+
+---
+
+## `testes/`
+
+* `PopularBD.java`
+
+---
+
+## Classe principal
+
+* `Principal.java`
+
+---
+
+# 🔗 Relacionamento N:N
+
+O relacionamento entre usuários e cursos é implementado pela entidade `Inscricao`, permitindo que:
+
+* um usuário participe de vários cursos;
+* um curso possua vários participantes.
+
+A persistência das inscrições é feita pela classe `ArquivoInscricao`, que utiliza duas Árvores B+:
+
+* `ArvoreBMais<ParUsuarioInscricao>`
+
+  * recupera todas as inscrições de um usuário;
+
+* `ArvoreBMais<ParCursoInscricao>`
+
+  * recupera todos os inscritos de um curso.
+
+Essa modelagem garante buscas eficientes e atende aos requisitos do TP2.
+
+---
+
+# ⚙️ Operações Especiais Implementadas
+
+## NanoID para cursos
+
+Cada curso recebe automaticamente um código alfanumérico único de 10 caracteres utilizado como identificador público.
+
+---
+
+## Integridade referencial
+
+O sistema impede:
+
+* exclusão de usuários que possuam cursos ou inscrições;
+* exclusão de cursos que possuam inscrições.
+
+Isso evita registros órfãos e mantém a consistência da base de dados.
+
+---
+
+## Controle de estados
+
+As regras de negócio impedem novas inscrições em cursos:
+
+* cancelados;
+* concluídos;
+* com inscrições encerradas.
+
+---
+
+## Exportação CSV
+
+O sistema permite exportar os inscritos de um curso para um arquivo `.csv`, contendo:
+
+* nome do usuário;
+* email;
+* identificador do curso.
+
+---
+
+# ✅ Checklist de Avaliação
+
+## Pergunta 1: Há um CRUD de usuários funcionando corretamente?
+
+Sim. A classe `ArquivoUsuario` implementa CRUD completo com Hash Extensível para índice direto e índice de email.
+
+---
+
+## Pergunta 2: Há um CRUD de cursos funcionando corretamente?
+
+Sim. A classe `ArquivoCurso` implementa CRUD completo utilizando Hash Extensível e Árvores B+.
+
+---
+
+## Pergunta 3: Há um CRUD de inscrições funcionando corretamente?
+
+Sim. A classe `ArquivoInscricao` implementa CRUD da entidade de relacionamento N:N entre usuários e cursos.
+
+---
+
+## Pergunta 4: Existe relacionamento N:N implementado com Árvores B+?
+
+Sim. O sistema utiliza:
+
+* `ArvoreBMais<ParUsuarioInscricao>`
+* `ArvoreBMais<ParCursoInscricao>`
+
+para indexar as inscrições.
+
+---
+
+## Pergunta 5: O sistema impede inscrições duplicadas?
+
+Sim. Antes da criação de uma inscrição, o sistema verifica se o usuário já está inscrito no curso.
+
+---
+
+## Pergunta 6: Há controle de integridade referencial?
+
+Sim. O sistema impede exclusões que causariam registros órfãos.
+
+---
+
+## Pergunta 7: O sistema exporta relatórios?
+
+Sim. O sistema exporta listas de inscritos em formato CSV.
+
+---
+
+## Pergunta 8: O trabalho compila corretamente?
+
+Sim. O projeto compila corretamente utilizando os comandos especificados pela disciplina.
+
+---
+
+## Pergunta 9: O trabalho está funcionando sem erros de execução?
+
+Sim. Todos os fluxos principais foram testados:
+
+* autenticação;
+* CRUD de usuários;
+* CRUD de cursos;
+* CRUD de inscrições;
+* exportação CSV;
+* navegação;
+* persistência.
+
+---
+
+## Pergunta 10: O trabalho é original?
+
+Sim. O projeto foi desenvolvido integralmente pelo grupo utilizando apenas as classes-base fornecidas pelo professor.
+
+---
+
+# ⁉️ Observações Adicionais
+
+A classe `PopularBD.java` continua sendo utilizada para facilitar os testes do sistema, agora incluindo também a geração automática de inscrições.
+
+Ela:
+
+* cria usuários;
+* cria cursos;
+* cria inscrições automaticamente;
+* atualiza todos os índices necessários.
+
+---
+
+# 🧠 Conceitos de AED III Utilizados
+
+* Hash Extensível
+* Árvores B+
+* Persistência em arquivos
+* CRUD indexado
+* Relacionamento 1:N
+* Relacionamento N:N
+* Integridade referencial
+* Reaproveitamento de espaço
+* Registros de tamanho variável
+* Índices indiretos
+* Exportação de relatórios
+* Estruturas de dados externas
+
+---
+
+# 🚀 Evolução do TP1 → TP2
+
+A principal evolução do sistema nesta etapa foi a transformação do modelo de cursos isolados em uma plataforma colaborativa de inscrições, utilizando relacionamento N:N e estruturas indexadas eficientes para recuperação de dados em larga escala.
+
+O TP2 amplia significativamente a complexidade estrutural do sistema, consolidando o uso de Árvores B+ e Hash Extensível em um ambiente persistente e integrado.
