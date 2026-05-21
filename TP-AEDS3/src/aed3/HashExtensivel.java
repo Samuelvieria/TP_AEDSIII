@@ -299,7 +299,6 @@ public class HashExtensivel<T extends InterfaceHashExtensivel> {
 
   public boolean create(T elem) throws Exception {
 
-    // Carrega TODO o diretório para a memória
     byte[] bd = new byte[(int) arqDiretorio.length()];
     arqDiretorio.seek(0);
     arqDiretorio.read(bd);
