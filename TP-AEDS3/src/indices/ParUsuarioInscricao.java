@@ -13,7 +13,7 @@ public class ParUsuarioInscricao implements InterfaceArvoreBMais<ParUsuarioInscr
     private int idInscricao;
     private final short TAMANHO = 8; // 4 bytes (idUsuario) + 4 bytes (idInscricao)
 
-    private static final boolean DEBUG = false;
+    //private static final boolean DEBUG = false;
 
     public ParUsuarioInscricao() {
         this(-1, -1);

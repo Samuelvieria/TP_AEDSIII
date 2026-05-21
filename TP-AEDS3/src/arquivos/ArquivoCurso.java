@@ -4,7 +4,7 @@ import aed3.Arquivo;
 import aed3.ArvoreBMais;
 import aed3.HashExtensivel;
 import entidades.Curso;
-import entidades.Inscricao;
+//import entidades.Inscricao;
 import indices.ParCodigoId;
 import indices.ParNomeCursoId;
 import indices.ParUsuarioCursoId;

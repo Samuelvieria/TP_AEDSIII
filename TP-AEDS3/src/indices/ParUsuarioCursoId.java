@@ -14,7 +14,7 @@ public class ParUsuarioCursoId implements InterfaceArvoreBMais<ParUsuarioCursoId
     private final short TAMANHO = 8; // 4 bytes (int) + 4 bytes (int)
 
     // Constante para logs de debug
-    private static final boolean DEBUG = false;
+    //private static final boolean DEBUG = false;
 
     // Construtor vazio para o gerenciador de arquivos
     public ParUsuarioCursoId() {
