@@ -11,7 +11,7 @@
 
 apresentação do TP2:
 
-`https://SEU-LINK-AQUI`
+https://youtu.be/HmciqhCHsO8
 
 ---
 
