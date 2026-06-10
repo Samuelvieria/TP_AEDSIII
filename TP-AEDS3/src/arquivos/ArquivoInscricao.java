@@ -77,9 +77,6 @@ public class ArquivoInscricao extends Arquivo<Inscricao> {
         return false;
     }
 
-    // ---------------- UPDATE ----------------
-    // Atualiza uma inscrição existente.
-    // Se o usuário ou o curso vinculados mudarem, reorganiza as Árvores B+.
     @Override
     public boolean update(Inscricao nova) throws Exception {
         if (nova == null)
@@ -95,13 +92,11 @@ public class ArquivoInscricao extends Arquivo<Inscricao> {
         boolean cursoAlterado = antiga.getIdCurso() != nova.getIdCurso();
 
         try {
-            // 2. Se mudou algo, remove os índices antigos antes de atualizar o arquivo
-            if (usuarioAlterado) {
+            // 2. Remove os índices antigos se as chaves mudaram
+            if (usuarioAlterado)
                 indiceUsuario.delete(new ParUsuarioInscricao(antiga.getIdUsuario(), antiga.getID()));
-            }
-            if (cursoAlterado) {
+            if (cursoAlterado)
                 indiceCurso.delete(new ParCursoInscricao(antiga.getIdCurso(), antiga.getID()));
-            }
 
             // 3. Atualiza o registro no arquivo físico base
             boolean atualizado = super.update(nova);
@@ -116,16 +111,19 @@ public class ArquivoInscricao extends Arquivo<Inscricao> {
             }
 
             // 4. Insere os novos índices atualizados
-            if (usuarioAlterado) {
+            if (usuarioAlterado)
                 indiceUsuario.create(new ParUsuarioInscricao(nova.getIdUsuario(), nova.getID()));
-            }
-            if (cursoAlterado) {
+            if (cursoAlterado)
                 indiceCurso.create(new ParCursoInscricao(nova.getIdCurso(), nova.getID()));
-            }
 
             return true;
 
         } catch (Exception e) {
+            // Rollback completo em caso de exceção
+            if (usuarioAlterado)
+                indiceUsuario.create(new ParUsuarioInscricao(antiga.getIdUsuario(), antiga.getID()));
+            if (cursoAlterado)
+                indiceCurso.create(new ParCursoInscricao(antiga.getIdCurso(), antiga.getID()));
             throw new Exception("Erro ao atualizar índices da inscrição: " + e.getMessage(), e);
         }
     }

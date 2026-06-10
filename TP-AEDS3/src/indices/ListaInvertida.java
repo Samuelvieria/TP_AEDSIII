@@ -1,13 +1,9 @@
 package indices;
 
 import aed3.ArvoreBMais;
-import aed3.HashExtensivel;
 import java.io.File;
-import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.lang.reflect.Constructor;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -48,7 +44,7 @@ public class ListaInvertida {
         arquivoDados = new RandomAccessFile(ARQUIVO_DADOS, "rw");
         if (arquivoDados.length() < 4) {
             arquivoDados.seek(0);
-            arquivoDados.writeInt(0);  // Próximo endereço disponível
+            arquivoDados.writeInt(4);  // Próximo endereço disponível
         }
 
         // Carregar total de cursos da metadata
@@ -94,12 +90,12 @@ public class ListaInvertida {
 
         // Buscar o termo na árvore
         ParTermoEndereco par = new ParTermoEndereco(termo, -1);
-        long[] resultados = arvore.read(par);
+        ArrayList<ParTermoEndereco> resultados = arvore.read(par);
 
         long endereco;
-        if (resultados != null && resultados.length > 0) {
+        if (resultados != null && !resultados.isEmpty()) {
             // Termo já existe
-            endereco = resultados[0];
+            endereco = resultados.get(0).getEndereco();
             atualizarOuAdicionarCursoNoTermo(endereco, idCurso, tf);
         } else {
             // Termo novo - criar entrada
@@ -168,7 +164,6 @@ public class ListaInvertida {
 
         // Procurar o curso
         for (int i = 0; i < quantidade; i++) {
-            long posInicial = arquivoDados.getFilePointer();
             int id = arquivoDados.readInt();
             if (id == idCurso) {
                 // Atualizar TF
@@ -213,12 +208,12 @@ public class ListaInvertida {
 
         // Buscar o termo
         ParTermoEndereco par = new ParTermoEndereco(termo, -1);
-        long[] resultados = arvore.read(par);
+        ArrayList<ParTermoEndereco> resultados = arvore.read(par);
 
-        if (resultados == null || resultados.length == 0)
+        if (resultados == null || resultados.isEmpty())
             return;
 
-        long endereco = resultados[0];
+        long endereco = resultados.get(0).getEndereco();
         arquivoDados.seek(endereco);
         int quantidade = arquivoDados.readInt();
 
@@ -262,12 +257,12 @@ public class ListaInvertida {
 
         // Buscar na árvore
         ParTermoEndereco par = new ParTermoEndereco(termo, -1);
-        long[] enderecos = arvore.read(par);
+        ArrayList<ParTermoEndereco> resultados = arvore.read(par);
 
-        if (enderecos == null || enderecos.length == 0)
+        if (resultados == null || resultados.isEmpty())
             return resultado;
 
-        long endereco = enderecos[0];
+        long endereco = resultados.get(0).getEndereco();
 
         // Ler os pares (idCurso, TF) do arquivo
         arquivoDados.seek(endereco);
@@ -319,14 +314,14 @@ public class ListaInvertida {
         termo = termo.toLowerCase().trim();
 
         ParTermoEndereco par = new ParTermoEndereco(termo, -1);
-        long[] enderecos = arvore.read(par);
+        ArrayList<ParTermoEndereco> resultados = arvore.read(par);
 
-        if (enderecos == null || enderecos.length == 0)
+        if (resultados == null || resultados.isEmpty())
             return 0;
 
-        long endereco = enderecos[0];
+        long endereco = resultados.get(0).getEndereco();
         arquivoDados.seek(endereco);
-        return arquivoDados.readInt();  // Retorna a quantidade de cursos
+        return arquivoDados.readInt();
     }
 
     /**

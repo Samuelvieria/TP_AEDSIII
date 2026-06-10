@@ -202,7 +202,10 @@ public class ControleInscricoes {
         System.out.println("DESCRIÇÃO.....: " + c.getDescricao());
         System.out.println("DATA DE INÍCIO: " + c.getDataInicio().format(dtf));
 
-        if (deMinhasInscricoes) {
+        // Verifica situação real da inscrição, independente de por onde o usuário navegou
+        boolean jaInscrito = arqInscricao.buscarRelacao(Sessao.getIdUsuarioLogado(), c.getID()) != null;
+
+        if (jaInscrito) {
             System.out.println("\n(A) Cancelar minha inscrição no curso");
         } else {
             System.out.println("\n(A) Fazer minha inscrição no curso");
@@ -212,8 +215,7 @@ public class ControleInscricoes {
         String opcao = console.nextLine().trim().toUpperCase();
 
         if (opcao.equals("A")) {
-            if (deMinhasInscricoes) {
-                // CORREÇÃO: Tipo alterado para Inscricao
+            if (jaInscrito) {
                 Inscricao relacao = arqInscricao.buscarRelacao(Sessao.getIdUsuarioLogado(), c.getID());
                 if (relacao != null) {
                     arqInscricao.delete(relacao.getID());
@@ -232,17 +234,8 @@ public class ControleInscricoes {
                     return;
                 }
 
-                // CORREÇÃO: Tipo alterado para Inscricao
-                Inscricao duplicada = arqInscricao.buscarRelacao(Sessao.getIdUsuarioLogado(), c.getID());
-                if (duplicada != null) {
-                    System.out.println("Inscrição recusada. Você já está matriculado neste curso.");
-                    return;
-                }
-
-                // CORREÇÃO: Instanciando a classe Inscricao com parâmetros adequados ao seu
-                // modelo
                 Inscricao novaInscricao = new Inscricao();
-                novaInscricao.setID(-1); // ID inicial genérico antes do incremento físico do arquivo
+                novaInscricao.setID(-1);
                 novaInscricao.setIdCurso(c.getID());
                 novaInscricao.setIdUsuario(Sessao.getIdUsuarioLogado());
 
@@ -259,6 +252,7 @@ public class ControleInscricoes {
             if (arqInscricao != null)
                 arqInscricao.close();
         } catch (Exception e) {
+            System.err.println("Erro ao fechar recursos de inscrições: " + e.getMessage());
         }
     }
 }
