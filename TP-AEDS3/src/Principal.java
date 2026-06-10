@@ -55,6 +55,11 @@ public class Principal {
                             System.out.println("[DEBUG] Acessando 'Minhas inscrições'.");
                         ctrlInscricao.menuPrincipalInscricoes();
                         break;
+                    case "D":
+                        if (DEBUG)
+                            System.out.println("[DEBUG] Acessando 'Buscar curso'.");
+                        ctrlCurso.buscarCurso();
+                        break;
                     case "P":
                         if (DEBUG)
                             System.out.println("[DEBUG] Executando população do BD.");
@@ -92,6 +97,7 @@ public class Principal {
         System.out.println("(A) Meus dados");
         System.out.println("(B) Meus cursos");
         System.out.println("(C) Minhas inscrições");
+        System.out.println("(D) Buscar curso");
         System.out.println("(P) Popular BD (teste)");
         System.out.println("(S) Sair");
         System.out.print("\nOpção: ");

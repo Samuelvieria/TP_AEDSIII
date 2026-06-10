@@ -1,9 +1,12 @@
 package controle;
 
 import arquivos.ArquivoCurso;
+import arquivos.ArquivoInscricao;
+import arquivos.ArquivoUsuario;
 import entidades.Curso;
 import java.util.ArrayList;
 import java.util.Scanner;
+import visao.GestaoRelatoriosEstados;
 import visao.VisaoCurso;
 
 // CLASSE DE CONTROLE PARA CURSO
@@ -12,15 +15,21 @@ import visao.VisaoCurso;
 public class ControleCurso {
 
     private ArquivoCurso arqCurso;
+    private ArquivoInscricao arqInscricao;
+    private ArquivoUsuario arqUsuario;
+    private GestaoRelatoriosEstados gestaoRelatorios;
     private VisaoCurso visao;
 
     // Constante para ativar/desativar logs de debug
     private static final boolean DEBUG = false;
 
-    // Construtor recebe o Scanner (para a visão) e inicializa o arquivo de cursos
+    // Construtor recebe o Scanner (para a visão) e inicializa os arquivos necessários
     public ControleCurso(Scanner console) throws Exception {
         this.visao = new VisaoCurso(console);
         this.arqCurso = new ArquivoCurso();
+        this.arqInscricao = new ArquivoInscricao();
+        this.arqUsuario = new ArquivoUsuario();
+        this.gestaoRelatorios = new GestaoRelatoriosEstados(arqCurso, arqUsuario, arqInscricao);
         if (DEBUG) System.out.println("[DEBUG] ControleCurso inicializado.");
     }
 
@@ -69,6 +78,47 @@ public class ControleCurso {
     }
 
     // ------------------------------------------------------------------------------
+    // BUSCA DE CURSOS (CÓDIGO E PALAVRAS-CHAVE)
+    // ------------------------------------------------------------------------------
+
+    // Gerencia o fluxo de busca de cursos: por código compartilhável ou por
+    // palavras-chave do nome (índice invertido com ranking TF x IDF).
+    public void buscarCurso() {
+        if (DEBUG) System.out.println("[DEBUG] Acessando menu Buscar curso.");
+        String opcao;
+        do {
+            opcao = this.visao.menuBuscarCurso();
+
+            try {
+                switch (opcao) {
+                    case "1":
+                        String codigo = this.visao.lerCodigoBusca();
+                        Curso encontrado = this.arqCurso.readCodigo(codigo);
+                        if (encontrado != null) {
+                            this.visao.mostrarCursoDetalhado(encontrado);
+                        } else {
+                            this.visao.mostrarMensagem("Nenhum curso encontrado com esse código.");
+                        }
+                        break;
+                    case "2":
+                        String palavras = this.visao.lerPalavrasBusca();
+                        ArrayList<Curso> resultados = this.arqCurso.buscarPorPalavras(palavras);
+                        this.visao.listarResultadosBusca(resultados);
+                        break;
+                    case "R":
+                        break;
+                    default:
+                        this.visao.mostrarMensagem("Opção inválida.");
+                }
+            } catch (Exception e) {
+                this.visao.mostrarMensagem("Erro ao buscar curso: " + e.getMessage());
+                if (DEBUG) System.out.println("[DEBUG] Exceção na busca: " + e.getMessage());
+            }
+        } while (!opcao.equals("R"));
+        if (DEBUG) System.out.println("[DEBUG] Saindo do menu Buscar curso.");
+    }
+
+    // ------------------------------------------------------------------------------
     // CRIAÇÃO DE CURSO
     // ------------------------------------------------------------------------------
 
@@ -105,8 +155,8 @@ public class ControleCurso {
             try {
                 switch (opcao) {
                     case "A":
-                        // Gerenciar inscritos - adiado para o TP2
-                        this.visao.mostrarMensagem("Funcionalidade disponível apenas no TP2.");
+                        // Gerenciar inscritos: listar alunos inscritos e exportar relatório CSV
+                        this.gerenciarInscritos(curso);
                         break;
                     case "B":
                         // Corrigir dados do curso
@@ -156,6 +206,37 @@ public class ControleCurso {
         } while (!opcao.equals("R"));
     }
 
+    // ------------------------------------------------------------------------------
+    // GERENCIAR INSCRITOS
+    // ------------------------------------------------------------------------------
+
+    // Permite ao dono do curso listar os alunos inscritos e exportar a lista em CSV.
+    private void gerenciarInscritos(Curso curso) {
+        if (DEBUG) System.out.println("[DEBUG] Gerenciando inscritos do curso ID: " + curso.getID());
+        String opcao;
+        do {
+            opcao = this.visao.menuGerenciarInscritos();
+
+            try {
+                switch (opcao) {
+                    case "1":
+                        this.gestaoRelatorios.exibirInscritosDoCurso(curso.getID());
+                        break;
+                    case "2":
+                        this.gestaoRelatorios.exportarInscritosCSV(curso.getID());
+                        break;
+                    case "R":
+                        break;
+                    default:
+                        this.visao.mostrarMensagem("Opção inválida.");
+                }
+            } catch (Exception e) {
+                this.visao.mostrarMensagem("Erro ao gerenciar inscritos: " + e.getMessage());
+                if (DEBUG) System.out.println("[DEBUG] Exceção ao gerenciar inscritos: " + e.getMessage());
+            }
+        } while (!opcao.equals("R"));
+    }
+
     // Realiza a alteração dos dados básicos de um curso (nome, descrição, data).
     private void alterarCurso(Curso curso) {
         if (DEBUG) System.out.println("[DEBUG] Iniciando alteração do curso ID: " + curso.getID());
@@ -198,9 +279,11 @@ public class ControleCurso {
     // FECHAMENTO
     // ------------------------------------------------------------------------------
 
-    // Fecha o arquivo de cursos (deve ser chamado ao encerrar o programa)
+    // Fecha os arquivos de cursos, inscrições e usuários (deve ser chamado ao encerrar o programa)
     public void close() throws Exception {
         if (DEBUG) System.out.println("[DEBUG] Fechando ControleCurso.");
         this.arqCurso.close();
+        this.arqInscricao.close();
+        this.arqUsuario.close();
     }
 }
