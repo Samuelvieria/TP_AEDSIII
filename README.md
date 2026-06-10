@@ -57,6 +57,7 @@ O sistema mantém toda a infraestrutura do TP1 — autenticação, gerenciamento
   * Cancelado
 * Listagem ordenada de cursos por data.
 * Busca de cursos por código compartilhável.
+* Busca de cursos por palavras-chave do nome, com resultados ordenados pelo valor TF x IDF (índice invertido).
 * Controle de integridade referencial.
 
 ---
@@ -92,6 +93,7 @@ O sistema mantém toda a infraestrutura do TP1 — autenticação, gerenciamento
 * Índice de email com Hash Extensível.
 * Índice de código de curso com Hash Extensível.
 * Índice por nome de curso com Árvore B+.
+* Índice invertido (Árvore B+) com listas de termos do nome dos cursos para busca por palavras-chave (TF x IDF).
 * Índice de relacionamento usuário → cursos com Árvore B+.
 * Índice de relacionamento usuário → inscrições com Árvore B+.
 * Índice de relacionamento curso → inscrições com Árvore B+.
@@ -130,6 +132,10 @@ Classes genéricas fornecidas:
 * `ParUsuarioCursoId.java`
 * `ParUsuarioInscricao.java`
 * `ParCursoInscricao.java`
+* `ParTermoId.java` — par (termo, ID do curso, TF) usado nas listas invertidas
+* `IndiceInvertido.java` — gerencia as listas invertidas e a busca por TF x IDF
+* `StopWords.java` — lista de palavras vazias do português
+* `Texto.java` — normalização e extração de termos para indexação
 
 ---
 
@@ -154,13 +160,15 @@ Classes genéricas fornecidas:
 
 * `VisaoUsuario.java`
 * `VisaoCurso.java`
-* `VisaoInscricao.java`
+* `GestaoRelatoriosEstados.java` — listagem e exportação CSV dos inscritos de um curso
 
 ---
 
 ## `testes/`
 
 * `PopularBD.java`
+* `TestadorRobustoTP2.java`
+* `TesteIndiceInvertido.java` — valida o índice invertido e a busca por palavras-chave (TF x IDF)
 
 ---
 
@@ -330,6 +338,7 @@ Ela:
 * Reaproveitamento de espaço
 * Registros de tamanho variável
 * Índices indiretos
+* Índice invertido e ranqueamento por TF x IDF
 * Exportação de relatórios
 * Estruturas de dados externas
 

@@ -63,7 +63,7 @@ public class ControleInscricoes {
                 }
 
                 System.out.println("\n(A) Buscar curso por código");
-                System.out.println("(B) Buscar curso por palavras-chave (Disponível no TP3)");
+                System.out.println("(B) Buscar curso por palavras-chave");
                 System.out.println("(C) Listar todos os cursos");
                 System.out.println("(R) Retornar ao menu anterior");
                 System.out.print("\nOpção: ");
@@ -82,7 +82,7 @@ public class ControleInscricoes {
                             buscarCursoPorCodigo();
                             break;
                         case "B":
-                            System.out.println("Funcionalidade alocada para o próximo escopo (TP3).");
+                            buscarCursoPorPalavras();
                             break;
                         case "C":
                             listarTodosCursosPaginados();
@@ -112,6 +112,38 @@ public class ControleInscricoes {
         // CORREÇÃO: Utilizando o método dinâmico com a entidade Inscricao
         boolean jaInscrito = arqInscricao.buscarRelacao(Sessao.getIdUsuarioLogado(), c.getID()) != null;
         exibirDetalhesCurso(c, jaInscrito);
+    }
+
+    // Busca cursos pelas palavras-chave do nome, usando o índice invertido
+    // (resultados ordenados pelo valor TF x IDF).
+    private void buscarCursoPorPalavras() throws Exception {
+        System.out.print("Digite as palavras-chave: ");
+        String texto = console.nextLine().trim();
+
+        ArrayList<Curso> resultados = arqCurso.buscarPorPalavras(texto);
+        if (resultados.isEmpty()) {
+            System.out.println("Nenhum curso encontrado para as palavras informadas.");
+            return;
+        }
+
+        System.out.println("\n--- RESULTADOS DA BUSCA ---");
+        for (int i = 0; i < resultados.size(); i++) {
+            Curso c = resultados.get(i);
+            System.out.printf("(%d) %s - %s\n", i + 1, c.getNome(), c.getDataInicio().format(dtf));
+        }
+
+        System.out.print("\nDigite o número do curso para ver detalhes (ou ENTER para voltar): ");
+        String opcao = console.nextLine().trim();
+        if (opcao.matches("\\d+")) {
+            int idx = Integer.parseInt(opcao) - 1;
+            if (idx >= 0 && idx < resultados.size()) {
+                Curso selecionado = resultados.get(idx);
+                boolean jaInscrito = arqInscricao.buscarRelacao(Sessao.getIdUsuarioLogado(), selecionado.getID()) != null;
+                exibirDetalhesCurso(selecionado, jaInscrito);
+            } else {
+                System.out.println("Opção inválida.");
+            }
+        }
     }
 
     private void listarTodosCursosPaginados() throws Exception {
