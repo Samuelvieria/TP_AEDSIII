@@ -2,6 +2,7 @@ package aed3;
 
 import java.text.Normalizer;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -17,76 +18,36 @@ public class TratamentoTexto {
     
     static {
         // Artigos
-        STOP_WORDS.add("a");
-        STOP_WORDS.add("o");
-        STOP_WORDS.add("um");
-        STOP_WORDS.add("uma");
-        STOP_WORDS.add("as");
-        STOP_WORDS.add("os");
-        STOP_WORDS.add("uns");
-        STOP_WORDS.add("umas");
+        Collections.addAll(STOP_WORDS,
+                "a", "o", "um", "uma", "as", "os", "uns", "umas");
         
         // Preposições
-        STOP_WORDS.add("de");
-        STOP_WORDS.add("para");
-        STOP_WORDS.add("com");
-        STOP_WORDS.add("do");
-        STOP_WORDS.add("da");
-        STOP_WORDS.add("em");
-        STOP_WORDS.add("por");
-        STOP_WORDS.add("na");
-        STOP_WORDS.add("no");
-        STOP_WORDS.add("à");
-        STOP_WORDS.add("ao");
-        STOP_WORDS.add("dos");
-        STOP_WORDS.add("das");
-        STOP_WORDS.add("pela");
-        STOP_WORDS.add("pelo");
-        STOP_WORDS.add("nas");
-        STOP_WORDS.add("nos");
-        STOP_WORDS.add("entre");
-        STOP_WORDS.add("sem");
-        STOP_WORDS.add("sob");
-        STOP_WORDS.add("sobre");
-        STOP_WORDS.add("até");
-        STOP_WORDS.add("após");
-        STOP_WORDS.add("antes");
-        STOP_WORDS.add("durante");
-        STOP_WORDS.add("contra");
-        STOP_WORDS.add("perante");
+        Collections.addAll(STOP_WORDS,
+                "de", "para", "com", "do", "da", "em", "por", "na", "no",
+                "ao", "aos", "dos", "das", "pela", "pelas", "pelo", "pelos",
+                "nas", "nos", "entre", "sem", "sob", "sobre", "ate", "apos",
+                "antes", "depois", "durante", "contra", "perante");
         
         // Conjunções
-        STOP_WORDS.add("e");
-        STOP_WORDS.add("mas");
-        STOP_WORDS.add("porém");
-        STOP_WORDS.add("contudo");
-        STOP_WORDS.add("todavia");
-        STOP_WORDS.add("entretanto");
-        STOP_WORDS.add("ou");
-        STOP_WORDS.add("nem");
-        STOP_WORDS.add("se");
-        STOP_WORDS.add("quando");
-        STOP_WORDS.add("onde");
-        STOP_WORDS.add("como");
+        Collections.addAll(STOP_WORDS,
+                "e", "mas", "porem", "contudo", "todavia", "entretanto",
+                "ou", "nem", "se", "quando", "onde", "como");
         
         // Pronomes
-        STOP_WORDS.add("que");
-        STOP_WORDS.add("qual");
-        STOP_WORDS.add("quais");
-        STOP_WORDS.add("quanto");
-        STOP_WORDS.add("quantos");
-        STOP_WORDS.add("quantas");
+        Collections.addAll(STOP_WORDS,
+                "que", "qual", "quais", "quanto", "quantos", "quanta",
+                "quantas", "quem", "cujo", "cuja", "cujos", "cujas");
+
+        // Numerais por extenso mais comuns
+        Collections.addAll(STOP_WORDS,
+                "zero", "um", "uma", "dois", "duas", "tres", "quatro",
+                "cinco", "seis", "sete", "oito", "nove", "dez", "primeiro",
+                "primeira", "segundo", "segunda", "terceiro", "terceira");
         
         // Outros
-        STOP_WORDS.add("etc");
-        STOP_WORDS.add("menos");
-        STOP_WORDS.add("exceto");
-        STOP_WORDS.add("salvo");
-        STOP_WORDS.add("tirante");
-        STOP_WORDS.add("inclusive");
-        STOP_WORDS.add("conforme");
-        STOP_WORDS.add("segundo");
-        STOP_WORDS.add("consoante");
+        Collections.addAll(STOP_WORDS,
+                "etc", "menos", "exceto", "salvo", "tirante", "inclusive",
+                "conforme", "segundo", "consoante");
     }
 
     /**
@@ -113,8 +74,11 @@ public class TratamentoTexto {
         if (texto == null || texto.trim().isEmpty())
             return tokens;
         
+        // Normaliza antes da regex para não quebrar palavras com acentos.
+        String normalizado = normalizar(texto);
+
         // Substituir pontuação por espaço
-        String limpo = texto.replaceAll("[^a-zA-Z0-9\\s]", " ");
+        String limpo = normalizado.replaceAll("[^a-z0-9\\s]", " ");
         
         // Dividir por espaços
         String[] palavras = limpo.split("\\s+");
@@ -134,7 +98,9 @@ public class TratamentoTexto {
     public static boolean ehStopWord(String palavra) {
         if (palavra == null)
             return true;
-        return STOP_WORDS.contains(palavra.toLowerCase());
+
+        String normalizada = normalizar(palavra);
+        return STOP_WORDS.contains(normalizada);
     }
 
     /**
@@ -169,8 +135,8 @@ public class TratamentoTexto {
             // Normalizar
             String normalizado = normalizar(token);
             
-            // Verificar se não é vazio e não é stop word
-            if (!normalizado.isEmpty() && !ehStopWord(normalizado)) {
+            // Verificar se não é vazio, numeral puro ou stop word
+            if (!normalizado.isEmpty() && !normalizado.matches("\\d+") && !ehStopWord(normalizado)) {
                 termos.add(normalizado);
             }
         }
