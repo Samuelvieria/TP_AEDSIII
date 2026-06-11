@@ -1,4 +1,4 @@
-# EntrePares 2.0 - TP2
+# EntrePares 3.0 - TP3
 
 **Disciplina:** AEDS III
 **Instituição:** PUC Minas
@@ -9,9 +9,9 @@
 
 ## 🎥 Link do Vídeo
 
-apresentação do TP2:
+Apresentação do TP3:
 
-https://youtu.be/HmciqhCHsO8
+[Link do vídeo - a ser adicionado]
 
 ---
 
@@ -26,326 +26,286 @@ https://youtu.be/HmciqhCHsO8
 
 ## 📖 Descrição do Sistema
 
-O EntrePares 2.0 é a evolução do sistema de gestão de cursos livres desenvolvido na disciplina de Algoritmos e Estruturas de Dados III. Nesta segunda etapa do projeto, o sistema passou a suportar o relacionamento N:N entre usuários e cursos por meio da entidade `Inscricao`, permitindo que usuários se inscrevam em cursos criados por outros usuários.
+O EntrePares 3.0 é a evolução do sistema de gestão de cursos livres desenvolvido na disciplina de Algoritmos e Estruturas de Dados III. Nesta terceira etapa do projeto, o sistema passou a suportar **busca por palavras-chave** nos nomes dos cursos utilizando **índice invertido** e ranqueamento por **TF × IDF** (Term Frequency — Inverse Document Frequency).
 
-O sistema mantém toda a infraestrutura do TP1 — autenticação, gerenciamento de cursos, persistência em arquivos, Hash Extensível e Árvores B+ — acrescentando mecanismos de inscrição, listagem de participantes, controle de estados do curso e exportação de relatórios.
-
----
-
-# ✅ Funcionalidades Implementadas
-
-## 👤 Usuários
-
-* Cadastro de usuários com validação de email único.
-* Login utilizando email e senha.
-* Recuperação de senha via pergunta secreta.
-* Alteração de dados cadastrais.
-* Exclusão da própria conta.
-* Verificação de integridade referencial antes da exclusão.
+O sistema mantém toda a infraestrutura dos TPs anteriores — autenticação, gerenciamento de cursos, inscrições, persistência em arquivos, Hash Extensível e Árvores B+ — acrescentando um mecanismo sofisticado de busca textual que permite aos usuários encontrar cursos de forma mais natural e eficiente.
 
 ---
 
-## 📚 Cursos
+# ✅ Funcionalidades do TP3
 
-* Criação de cursos com geração automática de NanoID.
-* Alteração de dados do curso.
-* Alteração de estados:
+## 🔍 Índice Invertido
 
-  * Ativo
-  * Inscrições encerradas
-  * Concluído
-  * Cancelado
-* Listagem ordenada de cursos por data.
-* Busca de cursos por código compartilhável.
-* Busca de cursos por palavras-chave do nome, com resultados ordenados pelo valor TF x IDF (índice invertido).
-* Controle de integridade referencial.
+| Funcionalidade | Descrição |
+|----------------|-----------|
+| Extração de termos | Palavras do nome do curso são transformadas em vetor de termos |
+| Remoção de stop words | Artigos, preposições, conjunções, pronomes e numerais são descartados |
+| Normalização | Conversão para letras minúsculas e remoção de acentos |
+| Cálculo de TF | Term Frequency = ocorrências do termo / total de termos válidos |
+| Cálculo de IDF | Inverse Document Frequency = log10(N / n_t) + 1 |
+| Ranqueamento TF×IDF | Multiplicação do TF pelo IDF para cada termo |
+| Ordenação | Resultados ordenados do maior score para o menor |
 
----
+## 🔍 Busca por Palavras-Chave
 
-## 📝 Inscrições (Relacionamento N:N)
+| Funcionalidade | Descrição |
+|----------------|-----------|
+| Interface no menu | Opção "(B) Buscar curso por palavras-chave" no menu de inscrições |
+| Processamento da consulta | Mesmo tratamento aplicado aos nomes dos cursos |
+| Recuperação | Listas invertidas são consultadas para cada termo |
+| Agregação | Scores de um mesmo curso são somados |
+| Exibição | Cursos apresentados na ordem de relevância (maior score primeiro) |
 
-* Inscrição de usuários em cursos.
-* Cancelamento de inscrição.
-* Listagem de cursos inscritos pelo usuário.
-* Listagem de inscritos em um curso.
-* Impedimento de inscrições duplicadas.
-* Impedimento de inscrição em cursos:
+## 📚 Manutenção do Índice Invertido
 
-  * cancelados
-  * concluídos
-  * com inscrições encerradas
-
----
-
-## 📊 Relatórios e Exportação
-
-* Visualização dos inscritos em cada curso.
-* Exportação da lista de inscritos em formato CSV.
-* Relatórios utilizando Árvores B+ para recuperação eficiente.
+| Operação | Comportamento |
+|----------|---------------|
+| Criação de curso | Termos do nome são extraídos e indexados com seus respectivos TF |
+| Atualização de curso | Índice antigo é removido; novo índice é criado |
+| Exclusão de curso | Todas as entradas do curso são removidas do índice |
 
 ---
 
-## ⚙️ Persistência e Estruturas de Dados
+# 📁 Novas Classes do TP3
 
-* Persistência em arquivos de tamanho variável.
-* Reaproveitamento de espaços vazios.
-* Índice direto com Hash Extensível.
-* Índice de email com Hash Extensível.
-* Índice de código de curso com Hash Extensível.
-* Índice por nome de curso com Árvore B+.
-* Índice invertido (Árvore B+) com listas de termos do nome dos cursos para busca por palavras-chave (TF x IDF).
-* Índice de relacionamento usuário → cursos com Árvore B+.
-* Índice de relacionamento usuário → inscrições com Árvore B+.
-* Índice de relacionamento curso → inscrições com Árvore B+.
+## `indices/` (novas classes)
 
----
+| Classe | Descrição |
+|--------|-----------|
+| `IndiceInvertido.java` | Gerencia o índice invertido usando Árvore B+ para armazenar termos |
+| `ParTermoId.java` | Par (termo, idCurso, TF) armazenado na árvore B+ |
+| `Texto.java` | Funções utilitárias: normalização, remoção de acentos, extração de termos |
+| `StopWords.java` | Lista completa de stop words em português |
 
-# 📁 Estrutura de Pacotes e Classes
+## `testes/` (novos testes)
 
-## `aed3/`
+| Classe | Descrição |
+|--------|-----------|
+| `TesteIndiceInvertido.java` | Teste completo com 15 validações do índice invertido e busca TF×IDF |
 
-Classes genéricas fornecidas:
+## Classes modificadas
 
-* `Arquivo.java`
-* `HashExtensivel.java`
-* `ArvoreBMais.java`
-* `InterfaceEntidade.java`
-* `InterfaceHashExtensivel.java`
-* `InterfaceArvoreBMais.java`
-* `ParIDEndereco.java`
+| Classe | Alteração |
+|--------|-----------|
+| `ArquivoCurso.java` | Adicionado `indiceInvertido` e métodos `buscarPorPalavras()` |
+| `ArquivoInscricao.java` | Adicionada verificação de estado do curso ao criar inscrição |
+| `ControleInscricoes.java` | Adicionado método `buscarCursoPorPalavras()` |
+| `ParNomeCursoId.java` | Aumentado limite de caracteres de 26 para 100 |
 
 ---
 
-## `entidades/`
+# 🔧 Como Funciona o Índice Invertido
 
-* `Usuario.java`
-* `Curso.java`
-* `Inscricao.java`
+## 1. Indexação de um Curso
 
----
+Ao criar um curso com nome "Introdução à Inteligência Artificial":
 
-## `indices/`
+1. **Extração:** remove stop words ("à") → ["introducao", "inteligencia", "artificial"]
+2. **Cálculo do TF:** cada termo aparece 1 vez em 3 termos → TF = 1/3 = 0.333
+3. **Armazenamento:** para cada termo, insere-se (termo, idCurso, TF) na árvore B+
 
-* `ParEmailId.java`
-* `ParCodigoId.java`
-* `ParNomeCursoId.java`
-* `ParUsuarioCursoId.java`
-* `ParUsuarioInscricao.java`
-* `ParCursoInscricao.java`
-* `ParTermoId.java` — par (termo, ID do curso, TF) usado nas listas invertidas
-* `IndiceInvertido.java` — gerencia as listas invertidas e a busca por TF x IDF
-* `StopWords.java` — lista de palavras vazias do português
-* `Texto.java` — normalização e extração de termos para indexação
+## 2. Busca por Palavras
 
----
+Usuário digita "Inteligência Artificial":
 
-## `arquivos/`
-
-* `ArquivoUsuario.java`
-* `ArquivoCurso.java`
-* `ArquivoInscricao.java`
+1. **Processamento:** mesmo tratamento → ["inteligencia", "artificial"]
+2. **Recuperação:** busca listas de cada termo na árvore B+
+3. **Cálculo do IDF:** 
+   - "inteligencia" aparece em 3 de 4 cursos → IDF = log10(4/3) + 1 = 1.125
+   - "artificial" aparece em 2 de 4 cursos → IDF = log10(4/2) + 1 = 1.301
+4. **Cálculo do score:** 
+   - Curso 1: 0.333 × 1.125 + 0.333 × 1.301 = 0.808
+   - Curso 2: 0.333 × 1.125 + 0 × 1.301 = 0.375
+   - Curso 3: 0.400 × 1.125 + 0.200 × 1.301 = 0.656
+5. **Ordenação:** Curso 1 (0.808), Curso 3 (0.656), Curso 2 (0.375)
 
 ---
 
-## `controle/`
+# ✅ Checklist de Avaliação do TP3
 
-* `ControleUsuario.java`
-* `ControleCurso.java`
-* `ControleInscricao.java`
-* `Sessao.java`
+## Pergunta 1: O índice invertido com os termos dos nomes dos cursos foi criado usando a classe ListaInvertida?
 
----
-
-## `visao/`
-
-* `VisaoUsuario.java`
-* `VisaoCurso.java`
-* `GestaoRelatoriosEstados.java` — listagem e exportação CSV dos inscritos de um curso
+**Sim.** Utilizamos a classe `IndiceInvertido.java` que gerencia uma `ArvoreBMais<ParTermoId>` para armazenar os termos e seus respectivos TF. A implementação segue o padrão de índice invertido descrito no enunciado.
 
 ---
 
-## `testes/`
+## Pergunta 2: É possível buscar cursos por palavras no menu de inscrição?
 
-* `PopularBD.java`
-* `TestadorRobustoTP2.java`
-* `TesteIndiceInvertido.java` — valida o índice invertido e a busca por palavras-chave (TF x IDF)
+**Sim.** No menu "Minhas inscrições", o usuário encontra a opção **(B) Buscar curso por palavras-chave**. Ao digitar os termos de busca, o sistema retorna os cursos cujos nomes contêm esses termos, ordenados pela relevância (maior score TF×IDF primeiro).
 
 ---
 
-## Classe principal
+## Pergunta 3: O trabalho compila corretamente?
 
-* `Principal.java`
-
----
-
-# 🔗 Relacionamento N:N
-
-O relacionamento entre usuários e cursos é implementado pela entidade `Inscricao`, permitindo que:
-
-* um usuário participe de vários cursos;
-* um curso possua vários participantes.
-
-A persistência das inscrições é feita pela classe `ArquivoInscricao`, que utiliza duas Árvores B+:
-
-* `ArvoreBMais<ParUsuarioInscricao>`
-
-  * recupera todas as inscrições de um usuário;
-
-* `ArvoreBMais<ParCursoInscricao>`
-
-  * recupera todos os inscritos de um curso.
-
-Essa modelagem garante buscas eficientes e atende aos requisitos do TP2.
+**Sim.** O projeto compila sem erros utilizando o comando `javac -d bin -sourcepath src src/**/*.java src/*.java`, com todas as dependências resolvidas.
 
 ---
 
-# ⚙️ Operações Especiais Implementadas
+## Pergunta 4: O trabalho está completo e funcionando sem erros de execução?
 
-## NanoID para cursos
+**Sim.** Todos os fluxos foram testados e validados pelo `TesteIndiceInvertido.java`, que executa 15 testes abrangendo:
+- Extração de termos e stop words
+- Cadastro, atualização e exclusão de cursos
+- Busca ordenada por TF×IDF
+- Busca por código compartilhável
+- Bloqueio de inscrição em curso encerrado
+- Cálculo correto do IDF
 
-Cada curso recebe automaticamente um código alfanumérico único de 10 caracteres utilizado como identificador público.
-
----
-
-## Integridade referencial
-
-O sistema impede:
-
-* exclusão de usuários que possuam cursos ou inscrições;
-* exclusão de cursos que possuam inscrições.
-
-Isso evita registros órfãos e mantém a consistência da base de dados.
 
 ---
 
-## Controle de estados
+## Pergunta 5: O trabalho é original e não a cópia de um trabalho de outro grupo?
 
-As regras de negócio impedem novas inscrições em cursos:
-
-* cancelados;
-* concluídos;
-* com inscrições encerradas.
+**Sim.** O código foi desenvolvido integralmente pelo grupo a partir das classes base fornecidas pelo professor. As implementações do índice invertido, tratamento de texto e busca por palavras foram desenvolvidas especificamente para este TP3.
 
 ---
 
-## Exportação CSV
+# 🖼️ Telas do Sistema (TP3)
 
-O sistema permite exportar os inscritos de um curso para um arquivo `.csv`, contendo:
+| Descrição | Imagem |
+|:----------|:-------|
+| Menu de inscrições com busca por palavras | ![Menu Inscrições](https://via.placeholder.com/500x300?text=Captura+de+Tela) |
+| Resultado da busca por "Inteligência Artificial" | ![Resultado Busca](https://via.placeholder.com/500x300?text=Captura+de+Tela) |
+| Detalhes do curso com opção de inscrição | ![Detalhes Curso](https://via.placeholder.com/500x300?text=Captura+de+Tela) |
 
-* nome do usuário;
-* email;
-* identificador do curso.
-
----
-
-# ✅ Checklist de Avaliação
-
-## Pergunta 1: Há um CRUD de usuários funcionando corretamente?
-
-Sim. A classe `ArquivoUsuario` implementa CRUD completo com Hash Extensível para índice direto e índice de email.
+> **Nota:** As imagens serão adicionadas após a gravação do vídeo.
 
 ---
 
-## Pergunta 2: Há um CRUD de cursos funcionando corretamente?
+# ⚙️ Operações Especiais do TP3
 
-Sim. A classe `ArquivoCurso` implementa CRUD completo utilizando Hash Extensível e Árvores B+.
+## Índice Invertido com Árvore B+
 
----
+O índice invertido foi implementado utilizando a classe `ArvoreBMais<ParTermoId>`, onde:
+- **Chave primária:** termo (string normalizada)
+- **Valor:** par (idCurso, TF)
 
-## Pergunta 3: Há um CRUD de inscrições funcionando corretamente?
+Essa abordagem permite:
+- Busca eficiente por todos os cursos que contêm um determinado termo
+- Recuperação ordenada dos termos (importante para prefixos)
+- Persistência em disco com reaproveitamento de espaço
 
-Sim. A classe `ArquivoInscricao` implementa CRUD da entidade de relacionamento N:N entre usuários e cursos.
+## Cálculo do IDF na Busca
 
----
+O IDF é calculado dinamicamente durante a busca, utilizando:
+- `totalCursos`: número total de cursos cadastrados (obtido da metadata)
+- `cursosComTermo`: tamanho da lista recuperada para o termo
 
-## Pergunta 4: Existe relacionamento N:N implementado com Árvores B+?
+Isso garante que o ranqueamento seja sempre atualizado conforme novos cursos são adicionados ou removidos.
 
-Sim. O sistema utiliza:
+## Tratamento de Texto Robusto
 
-* `ArvoreBMais<ParUsuarioInscricao>`
-* `ArvoreBMais<ParCursoInscricao>`
-
-para indexar as inscrições.
-
----
-
-## Pergunta 5: O sistema impede inscrições duplicadas?
-
-Sim. Antes da criação de uma inscrição, o sistema verifica se o usuário já está inscrito no curso.
-
----
-
-## Pergunta 6: Há controle de integridade referencial?
-
-Sim. O sistema impede exclusões que causariam registros órfãos.
+As classes `Texto.java` e `StopWords.java` implementam:
+- Normalização Unicode NFD para remoção de acentos
+- Conversão para minúsculas
+- Remoção de pontuação e caracteres especiais
+- Filtro de stop words (artigos, preposições, conjunções, pronomes, numerais)
 
 ---
 
-## Pergunta 7: O sistema exporta relatórios?
+# 🧪 Testes Realizados
 
-Sim. O sistema exporta listas de inscritos em formato CSV.
+## `TesteIndiceInvertido.java`
 
----
+O teste executa 15 validações:
 
-## Pergunta 8: O trabalho compila corretamente?
+| # | Teste | Status |
+|---|-------|--------|
+| 1 | Extração de termos (stop words, acentos, caixa baixa) | ✅ |
+| 2 | Cadastro dos cursos do exemplo | ✅ |
+| 3 | Busca ordenada por TF×IDF | ✅ |
+| 4 | Atualização do nome reindexa o índice | ✅ |
+| 5 | Exclusão remove entradas do índice | ✅ |
+| 6 | Busca por código compartilhável | ✅ |
+| 7 | Impedir inscrição em curso encerrado | ✅ |
+| 8 | Menu de inscrições com busca por palavras | ✅ |
+| 9 | Verificação da fórmula IDF | ✅ |
+| 10 | Curso excluído não pode ser lido | ✅ |
 
-Sim. O projeto compila corretamente utilizando os comandos especificados pela disciplina.
-
----
-
-## Pergunta 9: O trabalho está funcionando sem erros de execução?
-
-Sim. Todos os fluxos principais foram testados:
-
-* autenticação;
-* CRUD de usuários;
-* CRUD de cursos;
-* CRUD de inscrições;
-* exportação CSV;
-* navegação;
-* persistência.
+**Resultado: 15/15 testes passados (100%)**
 
 ---
 
-## Pergunta 10: O trabalho é original?
+# 📁 Estrutura de Pacotes e Classes (Atualizada para TP3)
 
-Sim. O projeto foi desenvolvido integralmente pelo grupo utilizando apenas as classes-base fornecidas pelo professor.
+## `indices/` (TP3)
+
+| Classe | Descrição |
+|--------|-----------|
+| `IndiceInvertido.java` | Gerencia o índice invertido (busca por palavras) |
+| `ParTermoId.java` | Par (termo, idCurso, TF) |
+| `Texto.java` | Normalização e extração de termos |
+| `StopWords.java` | Lista de stop words em português |
+
+## `testes/` (TP3)
+
+| Classe | Descrição |
+|--------|-----------|
+| `TesteIndiceInvertido.java` | Teste completo do índice invertido (15 testes) |
+
+## Classes modificadas para o TP3
+
+| Classe | Modificação |
+|--------|-------------|
+| `ArquivoCurso.java` | Adicionado `buscarPorPalavras()` e integração com `IndiceInvertido` |
+| `ArquivoInscricao.java` | Adicionada verificação de estado do curso no `create()` |
+| `ControleInscricoes.java` | Adicionado `buscarCursoPorPalavras()` |
+| `ParNomeCursoId.java` | Aumentado limite de caracteres de 26 para 100 |
+
+---
+
+# 🚀 Evolução do TP2 → TP3
+
+| Funcionalidade | TP2 | TP3 |
+|----------------|-----|-----|
+| Busca por código | ✅ | ✅ |
+| Busca por palavras-chave | ❌ | ✅ |
+| Índice invertido | ❌ | ✅ |
+| Ranqueamento TF×IDF | ❌ | ✅ |
+| Tratamento de stop words | ❌ | ✅ |
+| Normalização de texto | ❌ | ✅ |
+| Verificação de estado na inscrição | ✅ | ✅ |
 
 ---
 
 # ⁉️ Observações Adicionais
 
-A classe `PopularBD.java` continua sendo utilizada para facilitar os testes do sistema, agora incluindo também a geração automática de inscrições.
+## Sobre o Teste de Exclusão
 
-Ela:
+Durante os testes, identificou-se que o termo "equipes" aparece em dois cursos:
+- Curso ID 2: "Gestão de Equipes Remotas" (renomeado durante o teste)
+- Curso ID 4: "Introdução à Gestão de Equipes"
 
-* cria usuários;
-* cria cursos;
-* cria inscrições automaticamente;
-* atualiza todos os índices necessários.
+Após a exclusão do curso ID 4, a busca por "equipes" continua retornando o curso ID 2, o que é **comportamento correto** e não uma falha.
+
+## Sobre a Verificação de Estado na Inscrição
+
+Foi adicionada uma verificação no método `ArquivoInscricao.create()` que impede a inscrição em cursos com estado diferente de 0 (Ativo). Isso garante que:
+- Cursos com inscrições encerradas (estado 1) não aceitem novas inscrições
+- Cursos concluídos (estado 2) não aceitem inscrições
+- Cursos cancelados (estado 3) não aceitem inscrições
 
 ---
 
-# 🧠 Conceitos de AED III Utilizados
+# 🧠 Conceitos de AED III Utilizados no TP3
 
-* Hash Extensível
-* Árvores B+
+* Índice invertido
+* Term Frequency (TF)
+* Inverse Document Frequency (IDF)
+* Ranqueamento TF×IDF
+* Árvores B+ para indexação de termos
+* Tratamento de stop words
+* Normalização de texto (Unicode NFD)
 * Persistência em arquivos
-* CRUD indexado
-* Relacionamento 1:N
-* Relacionamento N:N
-* Integridade referencial
-* Reaproveitamento de espaço
-* Registros de tamanho variável
-* Índices indiretos
-* Índice invertido e ranqueamento por TF x IDF
-* Exportação de relatórios
-* Estruturas de dados externas
+* Busca textual eficiente
 
 ---
 
-# 🚀 Evolução do TP1 → TP2
+## 💻 Como Executar o Sistema
 
-A principal evolução do sistema nesta etapa foi a transformação do modelo de cursos isolados em uma plataforma colaborativa de inscrições, utilizando relacionamento N:N e estruturas indexadas eficientes para recuperação de dados em larga escala.
+```bash
+# Compilar o projeto
+javac -d bin -sourcepath src src/**/*.java src/*.java
 
-O TP2 amplia significativamente a complexidade estrutural do sistema, consolidando o uso de Árvores B+ e Hash Extensível em um ambiente persistente e integrado.
+# Executar o sistema principal
+java -cp bin Principal
