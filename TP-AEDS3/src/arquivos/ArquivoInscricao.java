@@ -1,5 +1,7 @@
 package arquivos;
-
+import entidades.Curso;
+import arquivos.ArquivoCurso;
+import entidades.Curso;
 import entidades.Inscricao;
 import indices.ParUsuarioInscricao;
 import indices.ParCursoInscricao;
@@ -33,8 +35,31 @@ public class ArquivoInscricao extends Arquivo<Inscricao> {
         if (obj == null)
             throw new IllegalArgumentException("Inscrição inválida.");
 
+        // VERIFICAR SE O CURSO EXISTE E ESTÁ ATIVO
+        Curso curso = new ArquivoCurso().read(obj.getIdCurso());
+        if (curso == null) {
+            throw new Exception("Erro: Curso não encontrado!");
+        }
+        if (curso.getEstado() != 0) {
+            String msgEstado;
+            switch (curso.getEstado()) {
+                case 1:
+                    msgEstado = "INSCRIÇÕES ENCERRADAS";
+                    break;
+                case 2:
+                    msgEstado = "CURSO CONCLUÍDO";
+                    break;
+                case 3:
+                    msgEstado = "CURSO CANCELADO";
+                    break;
+                default:
+                    msgEstado = "ESTADO INVÁLIDO";
+                    break;
+            }
+            throw new Exception("Erro: Não é possível se inscrever. O curso está com status: " + msgEstado);
+        }
+
         // CORREÇÃO: Busca usando o par completo (idUsuario, -1) para mapeamento seguro
-        // na Árvore B+
         ArrayList<ParUsuarioInscricao> inscricoesExistentes = indiceUsuario
                 .read(new ParUsuarioInscricao(obj.getIdUsuario(), -1));
 

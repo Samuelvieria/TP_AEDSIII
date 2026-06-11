@@ -138,7 +138,8 @@ public class ControleInscricoes {
             int idx = Integer.parseInt(opcao) - 1;
             if (idx >= 0 && idx < resultados.size()) {
                 Curso selecionado = resultados.get(idx);
-                boolean jaInscrito = arqInscricao.buscarRelacao(Sessao.getIdUsuarioLogado(), selecionado.getID()) != null;
+                boolean jaInscrito = arqInscricao.buscarRelacao(Sessao.getIdUsuarioLogado(),
+                        selecionado.getID()) != null;
                 exibirDetalhesCurso(selecionado, jaInscrito);
             } else {
                 System.out.println("Opção inválida.");
@@ -234,8 +235,15 @@ public class ControleInscricoes {
         System.out.println("DESCRIÇÃO.....: " + c.getDescricao());
         System.out.println("DATA DE INÍCIO: " + c.getDataInicio().format(dtf));
 
-        // Verifica situação real da inscrição, independente de por onde o usuário navegou
-        boolean jaInscrito = arqInscricao.buscarRelacao(Sessao.getIdUsuarioLogado(), c.getID()) != null;
+        // RELER O CURSO DO ARQUIVO PARA GARANTIR DADOS ATUALIZADOS
+        Curso cursoAtual = arqCurso.read(c.getID());
+        if (cursoAtual == null) {
+            System.out.println("Curso não encontrado.");
+            return;
+        }
+
+        // Verifica situação real da inscrição
+        boolean jaInscrito = arqInscricao.buscarRelacao(Sessao.getIdUsuarioLogado(), cursoAtual.getID()) != null;
 
         if (jaInscrito) {
             System.out.println("\n(A) Cancelar minha inscrição no curso");
@@ -248,7 +256,7 @@ public class ControleInscricoes {
 
         if (opcao.equals("A")) {
             if (jaInscrito) {
-                Inscricao relacao = arqInscricao.buscarRelacao(Sessao.getIdUsuarioLogado(), c.getID());
+                Inscricao relacao = arqInscricao.buscarRelacao(Sessao.getIdUsuarioLogado(), cursoAtual.getID());
                 if (relacao != null) {
                     arqInscricao.delete(relacao.getID());
                     System.out.println("Inscrição cancelada com sucesso!");
@@ -256,19 +264,40 @@ public class ControleInscricoes {
                     System.out.println("Vínculo de matrícula não rastreado.");
                 }
             } else {
-                if (c.getIdUsuario() == Sessao.getIdUsuarioLogado()) {
+                // VERIFICA SE O USUÁRIO É O PROPRIETÁRIO
+                if (cursoAtual.getIdUsuario() == Sessao.getIdUsuarioLogado()) {
                     System.out.println(
                             "Regra de integridade: Você é o proponente deste curso e não pode se inscrever nele.");
                     return;
                 }
-                if (c.getEstado() != 0) {
-                    System.out.println("Inscrição recusada. Este curso não está ativo ou aceitando inscrições.");
+
+                // VERIFICA O ESTADO ATUAL DO CURSO (USANDO O OBJETO RECÉM-LIDO)
+                System.out.println("   Debug - Estado do curso: " + cursoAtual.getEstado());
+
+                if (cursoAtual.getEstado() != 0) {
+                    String msgEstado;
+                    switch (cursoAtual.getEstado()) {
+                        case 1:
+                            msgEstado = "INSCRIÇÕES ENCERRADAS";
+                            break;
+                        case 2:
+                            msgEstado = "CURSO CONCLUÍDO";
+                            break;
+                        case 3:
+                            msgEstado = "CURSO CANCELADO";
+                            break;
+                        default:
+                            msgEstado = "ESTADO INVÁLIDO";
+                            break;
+                    }
+                    System.out.println("Inscrição recusada. Este curso não está aceitando inscrições.");
+                    System.out.println("Situação atual: " + msgEstado);
                     return;
                 }
 
                 Inscricao novaInscricao = new Inscricao();
                 novaInscricao.setID(-1);
-                novaInscricao.setIdCurso(c.getID());
+                novaInscricao.setIdCurso(cursoAtual.getID());
                 novaInscricao.setIdUsuario(Sessao.getIdUsuarioLogado());
 
                 arqInscricao.create(novaInscricao);

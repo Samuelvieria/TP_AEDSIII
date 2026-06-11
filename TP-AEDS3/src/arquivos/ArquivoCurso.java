@@ -4,6 +4,7 @@ import aed3.Arquivo;
 import aed3.ArvoreBMais;
 import aed3.HashExtensivel;
 import entidades.Curso;
+import entidades.Inscricao;
 //import entidades.Inscricao;
 import indices.IndiceInvertido;
 import indices.ParCodigoId;
@@ -48,7 +49,8 @@ public class ArquivoCurso extends Arquivo<Curso> {
                     5,
                     "dados/cursos_usuario.db");
 
-            // Índice invertido: lista invertida de termos do nome do curso (busca por palavras-chave)
+            // Índice invertido: lista invertida de termos do nome do curso (busca por
+            // palavras-chave)
             indiceInvertido = new IndiceInvertido("dados/cursos_invertido.db");
 
         } catch (Exception e) {
@@ -264,28 +266,19 @@ public class ArquivoCurso extends Arquivo<Curso> {
     // Exclui um curso (logicamente) e remove todas as suas referências nos índices.
     @Override
     public boolean delete(int id) throws Exception {
-
         Curso c = super.read(id);
         if (c == null)
             return false;
 
-        // CORREÇÃO: Uso de try-finally manual para evitar a exigência do AutoCloseable
-        // e tratamento seguro de encerramento do arquivo auxiliar.
-        arquivos.ArquivoInscricao arqInscricao = null;
+        // Verifica se tem inscritos
         try {
-            arqInscricao = new arquivos.ArquivoInscricao(); // Instanciação explícita com o pacote completo
-            ArrayList<entidades.Inscricao> alunosMatriculados = arqInscricao.listarPorCurso(id);
+            ArquivoInscricao arqInscricao = new ArquivoInscricao();
+            ArrayList<Inscricao> alunosMatriculados = arqInscricao.listarPorCurso(id);
             if (alunosMatriculados != null && !alunosMatriculados.isEmpty()) {
                 throw new Exception("Erro: O curso possui alunos inscritos e não pode ser excluído!");
             }
-        } finally {
-            if (arqInscricao != null) {
-                try {
-                    arqInscricao.close();
-                } catch (Exception e) {
-                    // Ignora falhas menores ao fechar a instância temporária
-                }
-            }
+        } catch (Exception e) {
+            throw e;
         }
 
         try {
@@ -293,7 +286,6 @@ public class ArquivoCurso extends Arquivo<Curso> {
             indiceNome.delete(new ParNomeCursoId(c.getNome(), id));
             indiceUsuario.delete(new ParUsuarioCursoId(c.getIdUsuario(), id));
             indiceInvertido.remover(c);
-
         } catch (Exception e) {
             throw new Exception("Erro ao remover índices do curso: " + e.getMessage(), e);
         }
