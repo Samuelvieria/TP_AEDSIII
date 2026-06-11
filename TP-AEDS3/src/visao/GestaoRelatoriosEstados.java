@@ -1,76 +1,57 @@
 package visao;
 
-import aed3.ArvoreBMais;
 import arquivos.ArquivoCurso;
+import arquivos.ArquivoInscricao;
 import arquivos.ArquivoUsuario;
 import entidades.Curso;
-import entidades.CursoUsuario;
-import entidades.EstadoCurso;
+import entidades.Inscricao;
 import entidades.Usuario;
 import java.io.FileWriter;
 import java.io.PrintWriter;
-import java.time.format.DateTimeFormatter;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
+// GESTÃO DE RELATÓRIOS DE INSCRITOS
+// Responsável por listar e exportar os usuários inscritos em um curso,
+// utilizando a Árvore B+ curso -> inscrições (ArquivoInscricao).
 public class GestaoRelatoriosEstados {
 
     private ArquivoCurso arqCursos;
     private ArquivoUsuario arqUsuarios;
+    private ArquivoInscricao arqInscricoes;
 
-    // Agora podemos tipar a árvore corretamente com CursoUsuario!
-    private ArvoreBMais<CursoUsuario> indiceCursoInscritos;
+    private static final SimpleDateFormat FMT_DATA = new SimpleDateFormat("dd/MM/yyyy");
 
-    public GestaoRelatoriosEstados(ArquivoCurso arqCursos,
-            ArquivoUsuario arqUsuarios,
-            ArvoreBMais<CursoUsuario> indiceCursoInscritos) {
+    public GestaoRelatoriosEstados(ArquivoCurso arqCursos, ArquivoUsuario arqUsuarios, ArquivoInscricao arqInscricoes) {
         this.arqCursos = arqCursos;
         this.arqUsuarios = arqUsuarios;
-        this.indiceCursoInscritos = indiceCursoInscritos;
+        this.arqInscricoes = arqInscricoes;
     }
 
-    public boolean validarPermissaoInscricao(int idCurso) throws Exception {
-        Curso curso = arqCursos.read(idCurso);
-        if (curso == null) {
-            System.out.println("Erro: Curso não encontrado.");
-            return false;
-        }
-
-        EstadoCurso estado = EstadoCurso.fromCodigo(curso.getEstado());
-        if (estado != EstadoCurso.ABERTO) {
-            System.out.println("Inscrição bloqueada. Motivo: " + estado.getDescricao());
-            return false;
-        }
-        return true;
-    }
-
+    // Exibe a lista de usuários inscritos no curso informado.
     public void exibirInscritosDoCurso(int idCurso) throws Exception {
-        CursoUsuario chaveBusca = new CursoUsuario();
-        chaveBusca.setIdCurso(idCurso);
+        ArrayList<Inscricao> inscritos = arqInscricoes.listarPorCurso(idCurso);
 
-        // Chamada limpa, tipada e sem gambiarras de compilação
-        ArrayList<CursoUsuario> listaRelacionamentos = indiceCursoInscritos.read(chaveBusca);
-
-        if (listaRelacionamentos == null || listaRelacionamentos.isEmpty()) {
+        if (inscritos.isEmpty()) {
             System.out.println("Não há inscritos neste curso no momento.");
             return;
         }
 
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        int contador = 1;
-
         System.out.println("\n--- ALUNOS INSCRITOS ---");
-        for (CursoUsuario relacionamento : listaRelacionamentos) {
-            if (relacionamento != null) {
-                Usuario aluno = arqUsuarios.read(relacionamento.getIdUsuario());
-                if (aluno != null) {
-                    String dataFormatada = relacionamento.getDataInscricao().format(dtf);
-                    System.out.printf("(%d) %s (%s)\n", contador, aluno.getNome(), dataFormatada);
-                    contador++;
-                }
+        int contador = 1;
+        for (Inscricao inscricao : inscritos) {
+            Usuario aluno = arqUsuarios.read(inscricao.getIdUsuario());
+            if (aluno != null) {
+                String dataFormatada = FMT_DATA.format(new Date(inscricao.getDataInscricao()));
+                System.out.printf("(%d) %s - %s (inscrito em %s)\n",
+                        contador, aluno.getNome(), aluno.getEmail(), dataFormatada);
+                contador++;
             }
         }
     }
 
+    // Exporta a lista de inscritos do curso para um arquivo CSV.
     public void exportarInscritosCSV(int idCurso) {
         try {
             Curso curso = arqCursos.read(idCurso);
@@ -79,31 +60,23 @@ public class GestaoRelatoriosEstados {
                 return;
             }
 
-            String nomeArquivo = "inscritos_curso_" + idCurso + ".csv";
-
-            CursoUsuario chaveBusca = new CursoUsuario();
-            chaveBusca.setIdCurso(idCurso);
-
-            ArrayList<CursoUsuario> listaRelacionamentos = indiceCursoInscritos.read(chaveBusca);
-
-            if (listaRelacionamentos == null || listaRelacionamentos.isEmpty()) {
+            ArrayList<Inscricao> inscritos = arqInscricoes.listarPorCurso(idCurso);
+            if (inscritos.isEmpty()) {
                 System.out.println("Exportação cancelada: Nenhum aluno inscrito.");
                 return;
             }
 
+            String nomeArquivo = "inscritos_curso_" + idCurso + ".csv";
+
             try (PrintWriter writer = new PrintWriter(new FileWriter(nomeArquivo))) {
                 writer.println("Nome,Email,DataDaInscricao");
-                DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-
-                for (CursoUsuario relacionamento : listaRelacionamentos) {
-                    if (relacionamento != null) {
-                        Usuario aluno = arqUsuarios.read(relacionamento.getIdUsuario());
-                        if (aluno != null) {
-                            String nomeLimpo = aluno.getNome().replace(",", "");
-                            String emailLimpo = aluno.getEmail().replace(",", "");
-                            String dataFormatada = relacionamento.getDataInscricao().format(dtf);
-                            writer.printf("%s,%s,%s\n", nomeLimpo, emailLimpo, dataFormatada);
-                        }
+                for (Inscricao inscricao : inscritos) {
+                    Usuario aluno = arqUsuarios.read(inscricao.getIdUsuario());
+                    if (aluno != null) {
+                        String nomeLimpo = aluno.getNome().replace(",", "");
+                        String emailLimpo = aluno.getEmail().replace(",", "");
+                        String dataFormatada = FMT_DATA.format(new Date(inscricao.getDataInscricao()));
+                        writer.printf("%s,%s,%s\n", nomeLimpo, emailLimpo, dataFormatada);
                     }
                 }
                 System.out.println("Sucesso! Lista exportada para o arquivo: " + nomeArquivo);

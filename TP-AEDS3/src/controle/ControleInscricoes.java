@@ -63,7 +63,7 @@ public class ControleInscricoes {
                 }
 
                 System.out.println("\n(A) Buscar curso por código");
-                System.out.println("(B) Buscar curso por palavras-chave (Disponível no TP3)");
+                System.out.println("(B) Buscar curso por palavras-chave");
                 System.out.println("(C) Listar todos os cursos");
                 System.out.println("(R) Retornar ao menu anterior");
                 System.out.print("\nOpção: ");
@@ -82,7 +82,7 @@ public class ControleInscricoes {
                             buscarCursoPorCodigo();
                             break;
                         case "B":
-                            System.out.println("Funcionalidade alocada para o próximo escopo (TP3).");
+                            buscarCursoPorPalavras();
                             break;
                         case "C":
                             listarTodosCursosPaginados();
@@ -112,6 +112,39 @@ public class ControleInscricoes {
         // CORREÇÃO: Utilizando o método dinâmico com a entidade Inscricao
         boolean jaInscrito = arqInscricao.buscarRelacao(Sessao.getIdUsuarioLogado(), c.getID()) != null;
         exibirDetalhesCurso(c, jaInscrito);
+    }
+
+    // Busca cursos pelas palavras-chave do nome, usando o índice invertido
+    // (resultados ordenados pelo valor TF x IDF).
+    private void buscarCursoPorPalavras() throws Exception {
+        System.out.print("Digite as palavras-chave: ");
+        String texto = console.nextLine().trim();
+
+        ArrayList<Curso> resultados = arqCurso.buscarPorPalavras(texto);
+        if (resultados.isEmpty()) {
+            System.out.println("Nenhum curso encontrado para as palavras informadas.");
+            return;
+        }
+
+        System.out.println("\n--- RESULTADOS DA BUSCA ---");
+        for (int i = 0; i < resultados.size(); i++) {
+            Curso c = resultados.get(i);
+            System.out.printf("(%d) %s - %s\n", i + 1, c.getNome(), c.getDataInicio().format(dtf));
+        }
+
+        System.out.print("\nDigite o número do curso para ver detalhes (ou ENTER para voltar): ");
+        String opcao = console.nextLine().trim();
+        if (opcao.matches("\\d+")) {
+            int idx = Integer.parseInt(opcao) - 1;
+            if (idx >= 0 && idx < resultados.size()) {
+                Curso selecionado = resultados.get(idx);
+                boolean jaInscrito = arqInscricao.buscarRelacao(Sessao.getIdUsuarioLogado(),
+                        selecionado.getID()) != null;
+                exibirDetalhesCurso(selecionado, jaInscrito);
+            } else {
+                System.out.println("Opção inválida.");
+            }
+        }
     }
 
     private void listarTodosCursosPaginados() throws Exception {
@@ -202,7 +235,17 @@ public class ControleInscricoes {
         System.out.println("DESCRIÇÃO.....: " + c.getDescricao());
         System.out.println("DATA DE INÍCIO: " + c.getDataInicio().format(dtf));
 
-        if (deMinhasInscricoes) {
+        // RELER O CURSO DO ARQUIVO PARA GARANTIR DADOS ATUALIZADOS
+        Curso cursoAtual = arqCurso.read(c.getID());
+        if (cursoAtual == null) {
+            System.out.println("Curso não encontrado.");
+            return;
+        }
+
+        // Verifica situação real da inscrição
+        boolean jaInscrito = arqInscricao.buscarRelacao(Sessao.getIdUsuarioLogado(), cursoAtual.getID()) != null;
+
+        if (jaInscrito) {
             System.out.println("\n(A) Cancelar minha inscrição no curso");
         } else {
             System.out.println("\n(A) Fazer minha inscrição no curso");
@@ -212,9 +255,8 @@ public class ControleInscricoes {
         String opcao = console.nextLine().trim().toUpperCase();
 
         if (opcao.equals("A")) {
-            if (deMinhasInscricoes) {
-                // CORREÇÃO: Tipo alterado para Inscricao
-                Inscricao relacao = arqInscricao.buscarRelacao(Sessao.getIdUsuarioLogado(), c.getID());
+            if (jaInscrito) {
+                Inscricao relacao = arqInscricao.buscarRelacao(Sessao.getIdUsuarioLogado(), cursoAtual.getID());
                 if (relacao != null) {
                     arqInscricao.delete(relacao.getID());
                     System.out.println("Inscrição cancelada com sucesso!");
@@ -222,28 +264,40 @@ public class ControleInscricoes {
                     System.out.println("Vínculo de matrícula não rastreado.");
                 }
             } else {
-                if (c.getIdUsuario() == Sessao.getIdUsuarioLogado()) {
+                // VERIFICA SE O USUÁRIO É O PROPRIETÁRIO
+                if (cursoAtual.getIdUsuario() == Sessao.getIdUsuarioLogado()) {
                     System.out.println(
                             "Regra de integridade: Você é o proponente deste curso e não pode se inscrever nele.");
                     return;
                 }
-                if (c.getEstado() != 0) {
-                    System.out.println("Inscrição recusada. Este curso não está ativo ou aceitando inscrições.");
+
+                // VERIFICA O ESTADO ATUAL DO CURSO (USANDO O OBJETO RECÉM-LIDO)
+                System.out.println("   Debug - Estado do curso: " + cursoAtual.getEstado());
+
+                if (cursoAtual.getEstado() != 0) {
+                    String msgEstado;
+                    switch (cursoAtual.getEstado()) {
+                        case 1:
+                            msgEstado = "INSCRIÇÕES ENCERRADAS";
+                            break;
+                        case 2:
+                            msgEstado = "CURSO CONCLUÍDO";
+                            break;
+                        case 3:
+                            msgEstado = "CURSO CANCELADO";
+                            break;
+                        default:
+                            msgEstado = "ESTADO INVÁLIDO";
+                            break;
+                    }
+                    System.out.println("Inscrição recusada. Este curso não está aceitando inscrições.");
+                    System.out.println("Situação atual: " + msgEstado);
                     return;
                 }
 
-                // CORREÇÃO: Tipo alterado para Inscricao
-                Inscricao duplicada = arqInscricao.buscarRelacao(Sessao.getIdUsuarioLogado(), c.getID());
-                if (duplicada != null) {
-                    System.out.println("Inscrição recusada. Você já está matriculado neste curso.");
-                    return;
-                }
-
-                // CORREÇÃO: Instanciando a classe Inscricao com parâmetros adequados ao seu
-                // modelo
                 Inscricao novaInscricao = new Inscricao();
-                novaInscricao.setID(-1); // ID inicial genérico antes do incremento físico do arquivo
-                novaInscricao.setIdCurso(c.getID());
+                novaInscricao.setID(-1);
+                novaInscricao.setIdCurso(cursoAtual.getID());
                 novaInscricao.setIdUsuario(Sessao.getIdUsuarioLogado());
 
                 arqInscricao.create(novaInscricao);
@@ -259,6 +313,7 @@ public class ControleInscricoes {
             if (arqInscricao != null)
                 arqInscricao.close();
         } catch (Exception e) {
+            System.err.println("Erro ao fechar recursos de inscrições: " + e.getMessage());
         }
     }
 }

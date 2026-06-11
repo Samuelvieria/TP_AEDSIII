@@ -4,7 +4,9 @@ import aed3.Arquivo;
 import aed3.ArvoreBMais;
 import aed3.HashExtensivel;
 import entidades.Curso;
+import entidades.Inscricao;
 //import entidades.Inscricao;
+import indices.IndiceInvertido;
 import indices.ParCodigoId;
 import indices.ParNomeCursoId;
 import indices.ParUsuarioCursoId;
@@ -20,6 +22,7 @@ public class ArquivoCurso extends Arquivo<Curso> {
     private HashExtensivel<ParCodigoId> indiceCodigo;
     private ArvoreBMais<ParNomeCursoId> indiceNome;
     private ArvoreBMais<ParUsuarioCursoId> indiceUsuario;
+    private IndiceInvertido indiceInvertido;
 
     private static final boolean DEBUG = false;
 
@@ -45,6 +48,10 @@ public class ArquivoCurso extends Arquivo<Curso> {
                     ParUsuarioCursoId.class.getConstructor(),
                     5,
                     "dados/cursos_usuario.db");
+
+            // Índice invertido: lista invertida de termos do nome do curso (busca por
+            // palavras-chave)
+            indiceInvertido = new IndiceInvertido("dados/cursos_invertido.db");
 
         } catch (Exception e) {
             System.err.println("Erro ao inicializar índices: " + e.getMessage());
@@ -78,6 +85,7 @@ public class ArquivoCurso extends Arquivo<Curso> {
             indiceCodigo.create(new ParCodigoId(c.getCodigo(), id));
             indiceNome.create(new ParNomeCursoId(c.getNome(), id));
             indiceUsuario.create(new ParUsuarioCursoId(c.getIdUsuario(), id));
+            indiceInvertido.indexar(c);
 
             if (DEBUG)
                 System.out.println("Curso criado com ID: " + id);
@@ -243,6 +251,10 @@ public class ArquivoCurso extends Arquivo<Curso> {
             if (usuarioAlterado)
                 indiceUsuario.create(new ParUsuarioCursoId(novo.getIdUsuario(), novo.getID()));
 
+            // Atualiza as listas invertidas se o nome do curso mudou
+            if (nomeAlterado)
+                indiceInvertido.atualizar(antigo, novo);
+
             return true;
 
         } catch (Exception e) {
@@ -254,40 +266,53 @@ public class ArquivoCurso extends Arquivo<Curso> {
     // Exclui um curso (logicamente) e remove todas as suas referências nos índices.
     @Override
     public boolean delete(int id) throws Exception {
-
         Curso c = super.read(id);
         if (c == null)
             return false;
 
-        // CORREÇÃO: Uso de try-finally manual para evitar a exigência do AutoCloseable
-        // e tratamento seguro de encerramento do arquivo auxiliar.
-        arquivos.ArquivoInscricao arqInscricao = null;
+        // Verifica se tem inscritos
         try {
-            arqInscricao = new arquivos.ArquivoInscricao(); // Instanciação explícita com o pacote completo
-            ArrayList<entidades.Inscricao> alunosMatriculados = arqInscricao.listarPorCurso(id);
+            ArquivoInscricao arqInscricao = new ArquivoInscricao();
+            ArrayList<Inscricao> alunosMatriculados = arqInscricao.listarPorCurso(id);
             if (alunosMatriculados != null && !alunosMatriculados.isEmpty()) {
                 throw new Exception("Erro: O curso possui alunos inscritos e não pode ser excluído!");
             }
-        } finally {
-            if (arqInscricao != null) {
-                try {
-                    arqInscricao.close();
-                } catch (Exception e) {
-                    // Ignora falhas menores ao fechar a instância temporária
-                }
-            }
+        } catch (Exception e) {
+            throw e;
         }
 
         try {
             indiceCodigo.delete(Math.abs(c.getCodigo().hashCode()));
             indiceNome.delete(new ParNomeCursoId(c.getNome(), id));
             indiceUsuario.delete(new ParUsuarioCursoId(c.getIdUsuario(), id));
-
+            indiceInvertido.remover(c);
         } catch (Exception e) {
             throw new Exception("Erro ao remover índices do curso: " + e.getMessage(), e);
         }
 
         return super.delete(id);
+    }
+
+    // ---------------- ÍNDICE INVERTIDO ----------------
+    // Busca cursos por palavras-chave do nome, ordenados pelo valor TF x IDF.
+    public ArrayList<Curso> buscarPorPalavras(String texto) throws Exception {
+        ArrayList<Curso> lista = new ArrayList<>();
+        if (texto == null || texto.trim().isEmpty())
+            return lista;
+
+        int totalCursos = listarTodos().size();
+        if (totalCursos == 0)
+            return lista;
+
+        ArrayList<Integer> ids = indiceInvertido.buscar(texto, totalCursos);
+
+        for (int id : ids) {
+            Curso c = super.read(id);
+            if (c != null)
+                lista.add(c);
+        }
+
+        return lista;
     }
 
     // ---------------- CLOSE ----------------
@@ -302,6 +327,8 @@ public class ArquivoCurso extends Arquivo<Curso> {
             indiceNome.close();
         if (indiceUsuario != null)
             indiceUsuario.close();
+        if (indiceInvertido != null)
+            indiceInvertido.close();
 
         if (DEBUG)
             System.out.println("ArquivoCurso fechado.");

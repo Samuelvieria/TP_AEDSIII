@@ -1,5 +1,7 @@
 package arquivos;
-
+import entidades.Curso;
+import arquivos.ArquivoCurso;
+import entidades.Curso;
 import entidades.Inscricao;
 import indices.ParUsuarioInscricao;
 import indices.ParCursoInscricao;
@@ -33,8 +35,31 @@ public class ArquivoInscricao extends Arquivo<Inscricao> {
         if (obj == null)
             throw new IllegalArgumentException("Inscrição inválida.");
 
+        // VERIFICAR SE O CURSO EXISTE E ESTÁ ATIVO
+        Curso curso = new ArquivoCurso().read(obj.getIdCurso());
+        if (curso == null) {
+            throw new Exception("Erro: Curso não encontrado!");
+        }
+        if (curso.getEstado() != 0) {
+            String msgEstado;
+            switch (curso.getEstado()) {
+                case 1:
+                    msgEstado = "INSCRIÇÕES ENCERRADAS";
+                    break;
+                case 2:
+                    msgEstado = "CURSO CONCLUÍDO";
+                    break;
+                case 3:
+                    msgEstado = "CURSO CANCELADO";
+                    break;
+                default:
+                    msgEstado = "ESTADO INVÁLIDO";
+                    break;
+            }
+            throw new Exception("Erro: Não é possível se inscrever. O curso está com status: " + msgEstado);
+        }
+
         // CORREÇÃO: Busca usando o par completo (idUsuario, -1) para mapeamento seguro
-        // na Árvore B+
         ArrayList<ParUsuarioInscricao> inscricoesExistentes = indiceUsuario
                 .read(new ParUsuarioInscricao(obj.getIdUsuario(), -1));
 
@@ -77,9 +102,6 @@ public class ArquivoInscricao extends Arquivo<Inscricao> {
         return false;
     }
 
-    // ---------------- UPDATE ----------------
-    // Atualiza uma inscrição existente.
-    // Se o usuário ou o curso vinculados mudarem, reorganiza as Árvores B+.
     @Override
     public boolean update(Inscricao nova) throws Exception {
         if (nova == null)
@@ -95,13 +117,11 @@ public class ArquivoInscricao extends Arquivo<Inscricao> {
         boolean cursoAlterado = antiga.getIdCurso() != nova.getIdCurso();
 
         try {
-            // 2. Se mudou algo, remove os índices antigos antes de atualizar o arquivo
-            if (usuarioAlterado) {
+            // 2. Remove os índices antigos se as chaves mudaram
+            if (usuarioAlterado)
                 indiceUsuario.delete(new ParUsuarioInscricao(antiga.getIdUsuario(), antiga.getID()));
-            }
-            if (cursoAlterado) {
+            if (cursoAlterado)
                 indiceCurso.delete(new ParCursoInscricao(antiga.getIdCurso(), antiga.getID()));
-            }
 
             // 3. Atualiza o registro no arquivo físico base
             boolean atualizado = super.update(nova);
@@ -116,16 +136,19 @@ public class ArquivoInscricao extends Arquivo<Inscricao> {
             }
 
             // 4. Insere os novos índices atualizados
-            if (usuarioAlterado) {
+            if (usuarioAlterado)
                 indiceUsuario.create(new ParUsuarioInscricao(nova.getIdUsuario(), nova.getID()));
-            }
-            if (cursoAlterado) {
+            if (cursoAlterado)
                 indiceCurso.create(new ParCursoInscricao(nova.getIdCurso(), nova.getID()));
-            }
 
             return true;
 
         } catch (Exception e) {
+            // Rollback completo em caso de exceção
+            if (usuarioAlterado)
+                indiceUsuario.create(new ParUsuarioInscricao(antiga.getIdUsuario(), antiga.getID()));
+            if (cursoAlterado)
+                indiceCurso.create(new ParCursoInscricao(antiga.getIdCurso(), antiga.getID()));
             throw new Exception("Erro ao atualizar índices da inscrição: " + e.getMessage(), e);
         }
     }

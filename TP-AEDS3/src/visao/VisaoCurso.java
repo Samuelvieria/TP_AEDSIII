@@ -154,7 +154,7 @@ public class VisaoCurso {
     // Exibe o menu de ações disponíveis para o curso selecionado.
     public String menuDetalhesCurso() {
         if (DEBUG) System.out.println("[DEBUG] Exibindo menu de detalhes do curso.");
-        System.out.println("\n(A) Gerenciar inscritos (TP2)");
+        System.out.println("\n(A) Gerenciar inscritos");
         System.out.println("(B) Corrigir dados do curso");
         System.out.println("(C) Encerrar inscrições");
         System.out.println("(D) Concluir curso");
@@ -164,6 +164,71 @@ public class VisaoCurso {
         String opcao = this.console.nextLine().trim().toUpperCase();
         if (DEBUG) System.out.println("[DEBUG] Opção escolhida: " + opcao);
         return opcao;
+    }
+
+    // ------------------------------------------------------------------------------
+    // GERENCIAR INSCRITOS
+    // ------------------------------------------------------------------------------
+
+    // Exibe o submenu de gerenciamento de inscritos do curso e retorna a opção escolhida.
+    public String menuGerenciarInscritos() {
+        if (DEBUG) System.out.println("[DEBUG] Exibindo menu de gerenciamento de inscritos.");
+        System.out.println("\n--- GERENCIAR INSCRITOS ---");
+        System.out.println("(1) Listar inscritos");
+        System.out.println("(2) Exportar inscritos para CSV");
+        System.out.println("(R) Retornar");
+        System.out.print("\nOpção: ");
+        String opcao = this.console.nextLine().trim().toUpperCase();
+        if (DEBUG) System.out.println("[DEBUG] Opção escolhida: " + opcao);
+        return opcao;
+    }
+
+    // ------------------------------------------------------------------------------
+    // BUSCA DE CURSOS (CÓDIGO E PALAVRAS-CHAVE)
+    // ------------------------------------------------------------------------------
+
+    // Exibe o menu de busca de cursos e retorna a opção escolhida.
+    public String menuBuscarCurso() {
+        if (DEBUG) System.out.println("[DEBUG] Exibindo menu de busca de cursos.");
+        System.out.println("\n\nEntrePares 1.0");
+        System.out.println("--------------");
+        System.out.println("> Início > Buscar curso\n");
+        System.out.println("(1) Buscar por código compartilhável");
+        System.out.println("(2) Buscar por palavras-chave do nome");
+        System.out.println("(R) Retornar ao menu anterior");
+        System.out.print("\nOpção: ");
+        String opcao = this.console.nextLine().trim().toUpperCase();
+        if (DEBUG) System.out.println("[DEBUG] Opção escolhida: " + opcao);
+        return opcao;
+    }
+
+    // Lê o código compartilhável digitado pelo usuário.
+    public String lerCodigoBusca() {
+        System.out.print("\nDigite o código do curso: ");
+        return this.console.nextLine().trim();
+    }
+
+    // Lê as palavras-chave digitadas pelo usuário.
+    public String lerPalavrasBusca() {
+        System.out.print("\nDigite as palavras-chave: ");
+        return this.console.nextLine().trim();
+    }
+
+    // Exibe a lista de cursos encontrados na busca por palavras-chave,
+    // ordenada pelo valor TF x IDF (calculado pelo índice invertido).
+    public void listarResultadosBusca(ArrayList<Curso> cursos) {
+        System.out.println("\n--- RESULTADOS DA BUSCA ---");
+        if (cursos == null || cursos.isEmpty()) {
+            System.out.println("Nenhum curso encontrado.");
+            if (DEBUG) System.out.println("[DEBUG] Busca por palavras-chave não retornou resultados.");
+            return;
+        }
+
+        for (int i = 0; i < cursos.size(); i++) {
+            Curso c = cursos.get(i);
+            System.out.printf("%d - %s (código: %s)\n", i + 1, c.getNome(), c.getCodigo());
+        }
+        if (DEBUG) System.out.println("[DEBUG] Encontrados " + cursos.size() + " cursos.");
     }
 
     // ------------------------------------------------------------------------------

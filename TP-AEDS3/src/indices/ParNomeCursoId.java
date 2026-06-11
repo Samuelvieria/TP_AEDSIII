@@ -13,7 +13,7 @@ public class ParNomeCursoId implements InterfaceArvoreBMais<ParNomeCursoId> {
 
     private String nome;
     private int id;
-    private final short TAMANHO = 30; // 26 bytes para o nome + 4 bytes para o id
+    private final short TAMANHO = 104; // 100 bytes para o nome + 4 bytes para o id
 
     // Constante para ativar/desativar logs de debug
     private static final boolean DEBUG = false;
@@ -27,8 +27,8 @@ public class ParNomeCursoId implements InterfaceArvoreBMais<ParNomeCursoId> {
     }
 
     public ParNomeCursoId(String nome, int id) throws Exception {
-        if (nome.getBytes().length > 26)
-            throw new Exception("Nome do curso muito extenso. Máximo de 26 caracteres.");
+        if (nome.getBytes().length > 100)
+            throw new Exception("Nome do curso muito extenso. Máximo de 100 caracteres.");
         this.nome = nome;
         this.id = id;
     }
@@ -78,15 +78,15 @@ public class ParNomeCursoId implements InterfaceArvoreBMais<ParNomeCursoId> {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);
 
-        // Escreve o nome como array de bytes de tamanho fixo (26 bytes)
-        byte[] vb = new byte[26];
+        // Escreve o nome como array de bytes de tamanho fixo (100 bytes)
+        byte[] vb = new byte[100];
         byte[] vbNome = this.nome.getBytes();
         int i = 0;
-        while (i < vbNome.length) {
+        while (i < vbNome.length && i < 100) {
             vb[i] = vbNome[i];
             i++;
         }
-        while (i < 26) {
+        while (i < 100) {
             vb[i] = ' ';
             i++;
         }
@@ -102,7 +102,7 @@ public class ParNomeCursoId implements InterfaceArvoreBMais<ParNomeCursoId> {
         ByteArrayInputStream bais = new ByteArrayInputStream(ba);
         DataInputStream dis = new DataInputStream(bais);
 
-        byte[] vb = new byte[26];
+        byte[] vb = new byte[100];
         dis.read(vb);
         this.nome = (new String(vb)).trim();
         this.id = dis.readInt();
