@@ -303,6 +303,14 @@ Foi adicionada uma verificação no método `ArquivoInscricao.create()` que impe
 
 ## 💻 Como Executar o Sistema
 
+[IMPORTANTE]
+
+Antes de rodar o sistema pela primeira vez ou ao reexecutar os testes:
+
+Apague a pasta dados/ localizada na raiz do projeto. Isso garante que resíduos de execuções anteriores não causem conflitos com o novo índice invertido.
+
+No VS Code, limpe o cache do servidor Java para evitar problemas de compilação: abra a paleta de comandos (Ctrl + Shift + P), digite Java: Clean Java Language Server Workspace e confirme.
+
 ```bash
 # Compilar o projeto
 javac -d bin -sourcepath src src/**/*.java src/*.java
