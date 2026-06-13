@@ -91,7 +91,7 @@ public class Principal {
 
     // Exibe o menu principal com breadcrumb "> Início"
     private static void exibirMenuPrincipal() {
-        System.out.println("\n\nEntrePares 1.0");
+        System.out.println("\n\nEntrePares 3.0");
         System.out.println("--------------");
         System.out.println("\n> Início\n");
         System.out.println("(A) Meus dados");
