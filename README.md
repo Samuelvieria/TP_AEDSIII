@@ -11,7 +11,7 @@
 
 Apresentação do TP3:
 
-[Link do vídeo - a ser adicionado]
+https://youtu.be/HmciqhCHsO8
 
 ---
 
