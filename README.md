@@ -9,9 +9,7 @@
 
 ## 🎥 Link do Vídeo
 
-Apresentação do TP3:
-
-https://youtu.be/HmciqhCHsO8
+https://youtu.be/EIktbQdKM5Y?is=uppzAQFb_K8WOmoM
 
 ---
 
